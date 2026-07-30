@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mongolian&family=IBM+Plex+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0a1628;
+            --navy-mid: #112240;
+            --navy-light: #1a3460;
+            --gold: #e8b84b;
+            --gold-dim: #b8922a;
+            --steel: #8fa8c8;
+            --steel-light: #c8daf0;
+            --bg: #060e1c;
+            --surface: #0d1f3c;
+            --surface2: #112240;
+            --border: rgba(232,184,75,0.18);
+            --text: #dce8f8;
+            --text-dim: #7a9abf;
+            --danger: #e05454;
+            --success: #3ecf8e;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 20px 15px 40px;
+            color: var(--text);
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(232,184,75,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(10,60,120,0.4) 0%, transparent 60%),
+                repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+        }
+
+        /* ── HEADER ── */
+        .app-header {
+            max-width: 680px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 4px;
+        }
+        .header-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: var(--navy);
+            box-shadow: 0 4px 20px rgba(232,184,75,0.35);
+            flex-shrink: 0;
+        }
+        .header-text h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .header-text p {
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-top: 3px;
+        }
+
+        /* ── MAIN CARD ── */
+        .card {
+            max-width: 680px;
+            margin: 0 auto 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-header .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 8px var(--gold);
+        }
+        .card-header h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: var(--steel-light);
+        }
+        .card-body { padding: 20px; }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom: 14px; }
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--navy);
+            border: 1px solid rgba(232,184,75,0.15);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(232,184,75,0.12);
+        }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e8b84b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+        textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+        .date-display-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #dateDisplay {
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.95;
+        }
+
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+
+        /* ── BUTTONS ── */
+        .form-actions { display: flex; gap: 10px; margin-top: 6px; }
+        .btn {
+            flex: 1;
+            padding: 12px 18px;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-add {
+            background: rgba(232,184,75,0.12);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+        .btn-add:hover { background: rgba(232,184,75,0.22); transform: translateY(-1px); }
+        .btn-add:active { transform: translateY(0); }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+            color: var(--navy);
+        }
+        .btn-send:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(232,184,75,0.3); }
+        .btn-send:active { transform: translateY(0); }
+        .btn-send:disabled { background: #2a3a4a; color: #4a6080; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ── DIVIDER ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 6px 0 0;
+            padding: 0 20px 20px;
+        }
+        .divider-line { flex: 1; height: 1px; background: var(--border); }
+        .divider-text { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+
+        /* ── PENDING ENTRIES ── */
+        .pending-section {
+            max-width: 680px;
+            margin: 0 auto 16px;
+        }
+        .pending-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+        .pending-title {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pending-count {
+            background: var(--gold);
+            color: var(--navy);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .btn-clear-all {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: var(--danger);
+            background: none;
+            border: 1px solid rgba(224,84,84,0.3);
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            transition: all 0.2s;
+        }
+        .btn-clear-all:hover { background: rgba(224,84,84,0.1); }
+
+        .pending-empty {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-dim);
+            font-size: 12px;
+            letter-spacing: 1px;
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+        }
+        .pending-empty i { display: block; font-size: 28px; margin-bottom: 10px; opacity: 0.3; color: var(--gold); }
+
+        /* ── ENTRY CARD ── */
+        .entry-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            overflow: hidden;
+            animation: slideIn 0.25s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .entry-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--navy-mid);
+            border-bottom: 1px solid var(--border);
+        }
+        .entry-route {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .entry-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: rgba(232,184,75,0.15);
+            color: var(--gold);
+            border: 1px solid rgba(232,184,75,0.3);
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .entry-km {
+            font-size: 13px;
+            color: var(--steel-light);
+            font-weight: 600;
+        }
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover { color: var(--danger); background: rgba(224,84,84,0.1); }
+
+        .entry-card-body { padding: 10px 14px; }
+        .entry-defect {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .entry-meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            gap: 14px;
+        }
+        .entry-meta span { display: flex; align-items: center; gap: 5px; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--surface2);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 999;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast i { color: var(--success); font-size: 16px; }
+        .toast.error i { color: var(--danger); }
+
+        /* ── SENT REPORT ── */
+        .report-card {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .date-header {
+            background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
+            border: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .date-header i { color: var(--gold); font-size: 12px; }
+        .date-header span { font-size: 12px; letter-spacing: 1px; color: var(--steel-light); }
+
+        .km-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            padding: 10px 16px;
+        }
+        .km-group:last-child { border-radius: 0 0 8px 8px; }
+        .km-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .defect-item {
+            font-size: 12px;
+            color: var(--steel-light);
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .defect-item:last-child { border-bottom: none; }
+        .defect-item::before { content: "▸"; color: var(--gold-dim); flex-shrink: 0; margin-top: 1px; }
+        .defect-inspector { color: var(--text-dim); font-size: 11px; }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            max-width: 680px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(62,207,142,0.06);
+            border: 1px solid rgba(62,207,142,0.2);
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--success);
+            letter-spacing: 1px;
+            display: none;
+        }
+        .status-bar.visible { display: flex; }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 3px; }
+
+        @media (max-width: 480px) {
+            .row { flex-direction: column; gap: 0; }
+            .header-text h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+    <div class="header-icon"><i class="fas fa-train"></i></div>
+    <div class="header-text">
+        <h1>ЗАМЫН ҮЗЛЭГИЙН БҮРТГЭЛ</h1>
+        <p>RAILWAY INSPECTION SYSTEM · UMNB</p>
+    </div>
+</div>
+
+<!-- MAIN FORM CARD -->
+<div class="card">
+    <div class="card-header">
+        <div class="dot"></div>
+        <h2>ҮНДСЭН МЭДЭЭЛЭЛ</h2>
+    </div>
+    <div class="card-body">
+        <!-- Static fields (date, section, inspector) -->
+        <div class="form-group">
+            <label><i class="fas fa-calendar-alt" style="color:var(--gold);margin-right:5px"></i>Огноо</label>
+            <div class="date-display-row">
+                <input type="hidden" id="date">
+                <input type="text" id="dateDisplay" readonly aria-readonly="true" tabindex="-1">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label><i class="fas fa-route" style="color:var(--gold);margin-right:5px"></i>Хоорондын зам</label>
+                <select id="section">
+                    <option value="Шатан">Шатан</option>
+                    <option value="мандал">Мандал</option>
+                    <option value="Өртөө зам">Өртөө зам</option>
+                    <option value="Салбар зам">Салбар зам</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-user-hard-hat" style="color:var(--gold);margin-right:5px"></i>Хяналт хийсэн</label>
+                <select id="inspector">
+                    <option value="ПД Л.Батсүх">ПД Л.Батсүх</option>
+                    <option value="ПДБ К.Мухамед">ПДБ К.Мухамед</option>
+                    <option value="ПДБк Э.Анужин">ПДБк Э.Анужин</option>
+                    <option value="ПДБ Б.Долгормаа">ПДБ Б.Долгормаа</option>
+                    <option value="ПДБ Н.Хишигдаваа">ПДБ Н.Хишигдаваа</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">БАЙРШИЛ · ГЭМТЭЛ</div>
+        <div class="divider-line"></div>
+    </div>
+
+    <div class="card-body" style="padding-top:0">
+        <!-- Variable fields for each entry -->
+        <div class="row">
+            <div class="form-group">
+                <label>КМ</label>
+                <input type="number" id="km" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>ПК</label>
+                <input type="number" id="pk" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>ҮЕ</label>
+                <input type="number" id="step" placeholder="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-exclamation-triangle" style="color:var(--gold);margin-right:5px"></i>Илэрсэн дутагдал</label>
+            <textarea id="defect" rows="3" placeholder="Гэмтлийн тодорхойлолт бичих..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-add" onclick="addEntry()">
+                <i class="fas fa-plus-circle"></i> НЭМЭХ
+            </button>
+            <button type="button" class="btn btn-send" id="submitBtn" onclick="submitData()" disabled>
+                <i class="fas fa-paper-plane"></i> ИЛГЭЭХ
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="statusBar">
+    <i class="fas fa-check-circle"></i>
+    <span id="statusText">Амжилттай илгээлээ.</span>
+</div>
+
+<!-- PENDING ENTRIES LIST -->
+<div class="pending-section">
+    <div class="pending-header">
+        <div class="pending-title">
+            <i class="fas fa-clipboard-list" style="color:var(--gold)"></i>
+            НЭМЭГДСЭН МЭДЭЭЛЭЛ
+            <span class="pending-count" id="pendingCount">0</span>
+        </div>
+        <button class="btn-clear-all" onclick="clearAll()" id="clearAllBtn" style="display:none">
+            <i class="fas fa-trash"></i> Бүгдийг устгах
+        </button>
+    </div>
+    <div id="pendingList">
+        <div class="pending-empty" id="emptyState">
+            <i class="fas fa-inbox"></i>
+            Нэмэгдсэн мэдээлэл байхгүй байна.<br>
+            <span style="font-size:10px;opacity:0.6">"НЭМЭХ" товчоор мэдээлэл оруулна уу</span>
+        </div>
+    </div>
+</div>
+
+<!-- SENT REPORT -->
+<div class="report-card" id="reportCard" style="display:none">
+    <div class="card">
+        <div class="card-header">
+            <div class="dot" style="background:var(--success);box-shadow:0 0 8px var(--success)"></div>
+            <h2>ИЛГЭЭГДСЭН ТАЙЛАН</h2>
+        </div>
+        <div class="card-body">
+            <div id="dataList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Амжилттай!</span>
+</div>
+
+<script>
+    // ── STATE ──
+    let pendingEntries = [];
+    // pd-1 өгөгдлийн шинэ Google Sheets линкүүд
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKhiRrwBZ-Q3ppLClIkH3-E-EDiSllPrQVm2rN23Upj9uFRh3kdfM-k9ALDOkZsubO/exec';
+    const TARGET_SPREADSHEET_ID = '1Lj5xIFHaWckxGz2mUlHVt9oewM1kHjdIrW_2XNx9O9M';
+    const TARGET_SHEET_GID = '0';
+    const TARGET_SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${TARGET_SPREADSHEET_ID}/export?format=csv&gid=${TARGET_SHEET_GID}`;
+    const TARGET_SHEET_JSON_URL = `https://opensheet.elk.sh/${TARGET_SPREADSHEET_ID}/${TARGET_SHEET_GID}`;
+    const STORAGE_KEYS = {
+        draft: 'pu28_draft_v1',
+        pending: 'pu28_pending_entries_v1'
+    };
+
+    // ── INIT ──
+    (function init() {
+        loadSavedState();
+        syncDateTimeField();
+        updateDateDisplay();
+        bindAutoSave();
+        renderPending();
+        saveDraft();
+    })();
+
+    // ── ADD ENTRY ──
+    function addEntry() {
+        const recordedAt = syncDateTimeField();
+        const km = document.getElementById('km').value.trim();
+        const pk = document.getElementById('pk').value.trim();
+        const step = document.getElementById('step').value.trim();
+        const defect = document.getElementById('defect').value.trim();
+
+        if (!km || !defect) {
+            showToast('КМ болон дутагдлын мэдээлэл оруулна уу!', true);
+            if (!km) document.getElementById('km').focus();
+            else document.getElementById('defect').focus();
+            return;
+        }
+
+        const entry = {
+            id: Date.now(),
+            date: formatDate(recordedAt),
+            section: document.getElementById('section').value,
+            km: km,
+            pk: pk || '0',
+            step: step || '0',
+            defect: defect,
+            inspector: document.getElementById('inspector').value,
+            time: formatTime(recordedAt)
+        };
+
+        pendingEntries.push(entry);
+        renderPending();
+        clearFields();
+        document.getElementById('km').focus();
+        showToast('Мэдээлэл амжилттай нэмэгдлээ');
+    }
+
+    // ── REMOVE SINGLE ENTRY ──
+    function removeEntry(id) {
+        pendingEntries = pendingEntries.filter(e => e.id !== id);
+        renderPending();
+    }
+
+    // ── CLEAR ALL ──
+    function clearAll() {
+        if (pendingEntries.length === 0) return;
+        if (!confirm('Бүх нэмэгдсэн мэдээллийг устгах уу?')) return;
+        pendingEntries = [];
+        renderPending();
+    }
+
+    // ── RENDER PENDING ──
+    function renderPending() {
+        savePendingEntries();
+
+        const list = document.getElementById('pendingList');
+        const count = document.getElementById('pendingCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const clearBtn = document.getElementById('clearAllBtn');
+        const emptyState = document.getElementById('emptyState');
+
+        count.textContent = pendingEntries.length;
+
+        if (pendingEntries.length === 0) {
+            list.innerHTML = '';
+            list.appendChild(emptyState);
+            emptyState.style.display = 'block';
+            submitBtn.disabled = true;
+            clearBtn.style.display = 'none';
+            return;
+        }
+
+        submitBtn.disabled = false;
+        clearBtn.style.display = 'block';
+
+        list.innerHTML = pendingEntries.map(e => `
+            <div class="entry-card" id="entry-${e.id}">
+                <div class="entry-card-head">
+                    <div class="entry-route">
+                        <span class="entry-badge">${e.section}</span>
+                        <span class="entry-km">${e.km}км · ${e.pk}пк · ${e.step}үе</span>
+                    </div>
+                    <button class="btn-delete" onclick="removeEntry(${e.id})" title="Устгах">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="entry-card-body">
+                    <div class="entry-defect">${e.defect}</div>
+                    <div class="entry-meta">
+                        <span><i class="fas fa-user" style="color:var(--gold-dim)"></i> ${e.inspector}</span>
+                        <span><i class="fas fa-clock" style="color:var(--gold-dim)"></i> ${e.time}</span>
+                        <span><i class="fas fa-calendar" style="color:var(--gold-dim)"></i> ${formatDate(e.date)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+// ── SUBMIT ──
+    function postViaHiddenForm(payloadObject) {
+        const iframeName = `gas_iframe_${Date.now()}`;
+        const iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = APPS_SCRIPT_URL;
+        form.target = iframeName;
+        form.style.display = 'none';
+
+        Object.entries(payloadObject).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+
+        setTimeout(() => {
+            form.remove();
+            iframe.remove();
+        }, 3000);
+    }
+
+    async function submitData() {
+        if (pendingEntries.length === 0) {
+            showToast('Илгээх мэдээлэл байхгүй байна!', true);
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Илгээж байна...';
+
+        const sent = [...pendingEntries];
+        const baselineCount = await getRemoteRowCount();
+        const payloadObject = {
+            source: 'PU-28-web',
+            submittedAt: new Date().toISOString(),
+            spreadsheetId: TARGET_SPREADSHEET_ID,
+            gid: TARGET_SHEET_GID,
+            data: JSON.stringify(sent)
+        };
+
+        const payload = new URLSearchParams(payloadObject);
+
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: payload
+            });
+        } catch (error) {
+            console.warn('Fetch submit failed. Falling back to hidden form POST.', error);
+            postViaHiddenForm(payloadObject);
+        }
+
+        const verified = await waitForSheetGrowth(baselineCount, sent.length);
+        if (!verified) {
+            showToast('Sheet рүү дамжуулалт баталгаажаагүй байна. doPost тохиргоогоо шалгана уу.', true);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> ИЛГЭЭХ';
+            return;
+        }
+
+        pendingEntries = [];
+        savePendingEntries();
+        renderPending();
+        onSubmitSuccess(sent);
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> ИЛГЭЭХ';
+    }
+
+    async function getRemoteRowCount() {
+        try {
+            const csvRes = await fetch(TARGET_SHEET_CSV_URL, { cache: 'no-store' });
+            if (csvRes.ok) {
+                const txt = await csvRes.text();
+                return Math.max(0, txt.split('\n').filter(line => line.trim() !== '').length - 1);
+            }
+        } catch (error) {
+            console.warn('CSV count check failed', error);
+        }
+
+        try {
+            const jsonRes = await fetch(TARGET_SHEET_JSON_URL, { cache: 'no-store' });
+            if (!jsonRes.ok) return null;
+            const json = await jsonRes.json();
+            return Array.isArray(json) ? json.length : null;
+        } catch (error) {
+            console.warn('JSON count check failed', error);
+            return null;
+        }
+    }
+
+    async function waitForSheetGrowth(baselineCount, expectedIncrease) {
+        if (baselineCount === null) {
+            // Remote row count шалгаж чадаагүй үед илгээлтийг блоклохгүй.
+            return true;
+        }
+
+        for (let i = 0; i < 6; i++) {
+            const currentCount = await getRemoteRowCount();
+            if (currentCount !== null && currentCount >= baselineCount + expectedIncrease) {
+                return true;
+            }
+            await new Promise(resolve => setTimeout(resolve, 800));
+        }
+        return false;
+    }
+
+    function onSubmitSuccess(sentData) {
+        showToast(`${sentData.length} мэдээлэл амжилттай илгээлээ`);
+        updateReport(sentData);
+
+        const bar = document.getElementById('statusBar');
+        document.getElementById('statusText').textContent =
+            `${sentData.length} бүртгэл · ${formatDate(sentData[0]?.date || '')} · Амжилттай илгээлээ`;
+        bar.classList.add('visible');
+    }
+
+    // ── UPDATE SENT REPORT ──
+    function updateReport(allData) {
+        const reportCard = document.getElementById('reportCard');
+        const listDiv = document.getElementById('dataList');
+        reportCard.style.display = 'block';
+        listDiv.innerHTML = '';
+
+        const grouped = {};
+        allData.forEach(item => {
+            const dk = item.date;
+            const kk = `${item.section}|${item.km}|${item.pk}`;
+            if (!grouped[dk]) grouped[dk] = {};
+            if (!grouped[dk][kk]) grouped[dk][kk] = { label: `${item.section} — ${item.km}км, ${item.pk}пк`, items: [] };
+            grouped[dk][kk].items.push(item);
+        });
+
+        Object.keys(grouped).sort().forEach(date => {
+            listDiv.innerHTML += `
+                <div class="date-header">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>${formatDate(date)}</span>
+                </div>`;
+            Object.values(grouped[date]).forEach(group => {
+                listDiv.innerHTML += `
+                    <div class="km-group">
+                        <div class="km-label"><i class="fas fa-map-marker-alt"></i> ${group.label}</div>
+                        ${group.items.map(i => `
+                            <div class="defect-item">
+                                <span>${i.defect} <span class="defect-inspector">(${i.inspector})</span></span>
+                            </div>`).join('')}
+                    </div>`;
+            });
+        });
+
+        reportCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── HELPERS ──
+    function clearFields() {
+        ['km', 'pk', 'step', 'defect'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        syncDateTimeField();
+        saveDraft();
+    }
+
+    function saveDraft() {
+        const draft = {
+            date: document.getElementById('date').value,
+            section: document.getElementById('section').value,
+            inspector: document.getElementById('inspector').value,
+            km: document.getElementById('km').value,
+            pk: document.getElementById('pk').value,
+            step: document.getElementById('step').value,
+            defect: document.getElementById('defect').value
+        };
+        localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(draft));
+    }
+
+    function savePendingEntries() {
+        localStorage.setItem(STORAGE_KEYS.pending, JSON.stringify(pendingEntries));
+    }
+
+    function loadSavedState() {
+        try {
+            const savedDraft = JSON.parse(localStorage.getItem(STORAGE_KEYS.draft) || 'null');
+            if (savedDraft) {
+                document.getElementById('date').value = savedDraft.date || '';
+                document.getElementById('section').value = savedDraft.section || 'Улаанбаатар';
+                document.getElementById('inspector').value = savedDraft.inspector || 'ПД Бат';
+                document.getElementById('km').value = savedDraft.km || '';
+                document.getElementById('pk').value = savedDraft.pk || '';
+                document.getElementById('step').value = savedDraft.step || '';
+                document.getElementById('defect').value = savedDraft.defect || '';
+            }
+
+            const savedPending = JSON.parse(localStorage.getItem(STORAGE_KEYS.pending) || '[]');
+            if (Array.isArray(savedPending)) {
+                pendingEntries = savedPending;
+            }
+        } catch (error) {
+            console.error('Autosave load error:', error);
+        }
+    }
+
+    function bindAutoSave() {
+        const autoSaveFieldIds = ['date', 'section', 'inspector', 'km', 'pk', 'step', 'defect'];
+        let draftSaveTimer;
+
+        autoSaveFieldIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const handler = () => {
+                clearTimeout(draftSaveTimer);
+                if (id === 'date') updateDateDisplay();
+                draftSaveTimer = setTimeout(saveDraft, 200);
+            };
+
+            el.addEventListener('input', handler);
+            el.addEventListener('change', handler);
+        });
+
+        window.addEventListener('beforeunload', saveDraft);
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        if (!dateStr.includes('T')) return dateStr;
+
+        const [datePart, timePart] = dateStr.split('T');
+        if (!datePart || !timePart) return dateStr;
+        const [y, m, d] = datePart.split('-');
+        const weekday = getWeekdayName(dateStr);
+        const [hh = '00', min = '00'] = timePart.split(':');
+        const hour = Number(hh);
+        const meridiem = hour < 12 ? 'AM' : 'PM';
+        const hour12 = String((hour % 12) || 12).padStart(2, '0');
+        const formatted = `${y}.${m}.${d} ${hour12}:${min} ${meridiem}`;
+        return weekday ? `${formatted} /${weekday}/` : formatted;
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        const [, timePart = ''] = dateStr.split('T');
+        return timePart.slice(0, 5);
+    }
+
+    function getCurrentDateTimeValue() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    }
+
+    function syncDateTimeField() {
+        const value = getCurrentDateTimeValue();
+        document.getElementById('date').value = value;
+        updateDateDisplay(value);
+        return value;
+    }
+
+    function updateDateDisplay(dateStr = document.getElementById('date').value) {
+        const display = document.getElementById('dateDisplay');
+        if (!display) return;
+        display.value = formatDate(dateStr);
+    }
+
+    function getWeekdayName(dateStr) {
+        const date = parseDateInputValue(dateStr);
+        if (!date) return '';
+
+        const weekdays = [
+            'Ням гариг',
+            'Даваа гариг',
+            'Мягмар гариг',
+            'Лхагва гариг',
+            'Пүрэв гариг',
+            'Баасан гариг',
+            'Бямба гариг'
+        ];
+
+        return weekdays[date.getDay()] || '';
+    }
+
+    function parseDateInputValue(dateStr) {
+        if (!dateStr) return null;
+        const normalized = dateStr.includes('T') ? dateStr : `${dateStr}T00:00`;
+        const date = new Date(normalized);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    let toastTimer;
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+        const icon = toast.querySelector('i');
+
+        toastMsg.textContent = msg;
+        toast.className = 'toast' + (isError ? ' error' : '');
+        icon.className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+
+        requestAnimationFrame(() => { toast.classList.add('show'); });
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2800);
+    }
+
+    // Enter key to add entry quickly
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') addEntry();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Замын хэсгийн мэдээлэл</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0b1220;
+    --navy2:  #131e31;
+    --navy3:  #1c2d47;
+    --blue:   #1e6fe6;
+    --blue2:  #3a8df5;
+    --gold:   #f0b840;
+    --gold2:  #f7d07a;
+    --green:  #22c55e;
+    --red:    #ef4444;
+    --slate:  #94a3b8;
+    --slate2: #64748b;
+    --text:   #e2e8f0;
+    --text2:  #cbd5e1;
+    --border: rgba(148,163,184,0.12);
+    --border2:rgba(148,163,184,0.22);
+    --card:   rgba(19,30,49,0.85);
+    --radius: 10px;
+    --mono:  'IBM Plex Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(30,111,230,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,111,230,0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,18,32,0.97);
+    border-bottom: 1px solid var(--border2);
+    backdrop-filter: blur(12px);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 60px;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .brand-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 8px var(--blue);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  .brand-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #f8fafc;
+    white-space: nowrap;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-left: auto;
+    z-index: 1;
+  }
+
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--navy3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--slate);
+  }
+  .meta-chip .val { color: var(--text); font-weight: 600; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue2); transform: translateY(-1px); }
+  .btn-gold    { background: var(--gold); color: #1a1000; }
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+  .action-send-btn {
+    min-width: 280px;
+    min-height: 52px;
+    padding: 12px 26px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    justify-content: center;
+  }
+  .btn-outline { background: transparent; border-color: var(--border2); color: var(--slate); }
+  .btn-outline:hover { border-color: var(--blue); color: var(--text); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* ── MAIN ── */
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 24px 28px 44px;
+  }
+
+  .action-bar {
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 0 16px;
+    margin-bottom: 14px;
+    background: linear-gradient(180deg, rgba(11,18,32,0.96) 0%, rgba(11,18,32,0.78) 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* ── TABLE CARD ── */
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 18px 50px rgba(3,8,20,0.28);
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .table-card:hover {
+    border-color: rgba(30,111,230,0.45);
+    transform: translateY(-1px);
+    box-shadow: 0 22px 60px rgba(3,8,20,0.34);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(28,45,71,0.98) 0%, rgba(19,30,49,0.98) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(30,111,230,0.15); }
+  .icon-gold   { background: rgba(240,184,64,0.15); }
+  .icon-green  { background: rgba(34,197,94,0.15); }
+  .icon-purple { background: rgba(168,85,247,0.15); }
+
+  .card-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #f8fafc;
+    flex: 1;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-size: 0.96rem;
+    background: rgba(11,18,32,0.36);
+  }
+
+  thead tr {
+    background: linear-gradient(90deg, rgba(30,111,230,0.95) 0%, rgba(28,45,71,0.98) 100%);
+  }
+  thead th {
+    padding: 14px 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fff;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    white-space: nowrap;
+  }
+  thead th:first-child {
+    text-align: left;
+    width: 62%;
+    padding-left: 18px;
+    color: #fff7d6;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border2);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child  { border-bottom: none; }
+  tbody tr:hover       { background: rgba(30,111,230,0.08); }
+
+  tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-right: 1px solid rgba(148,163,184,0.08);
+  }
+  tbody td:first-child {
+    padding-left: 18px;
+    color: var(--text2);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .sub-header td {
+    background: rgba(30,111,230,0.07) !important;
+    color: var(--blue2) !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    padding: 9px 16px !important;
+    border-top: 1px solid rgba(30,111,230,0.15);
+    border-bottom: 1px solid rgba(30,111,230,0.15);
+  }
+  .sub-header:hover { background: transparent !important; }
+
+  /* ── INPUTS ── */
+  input[type="number"] {
+    width: 100%;
+    background: rgba(19,30,49,0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: center;
+    transition: all 0.15s;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--blue);
+    background: rgba(30,111,230,0.08);
+    box-shadow: 0 0 0 2px rgba(30,111,230,0.2);
+  }
+  input[type="number"].readonly-input {
+    background: rgba(30,111,230,0.06) !important;
+    border-color: rgba(30,111,230,0.2) !important;
+    color: var(--blue2) !important;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .note-block {
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(11,18,32,0.22);
+  }
+
+  .note-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--gold2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .note-textarea {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 10px;
+    background: rgba(19,30,49,0.7);
+    color: var(--text);
+    padding: 12px 14px;
+    font-size: 0.92rem;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .note-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(240,184,64,0.18);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--navy2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 560px;
+    width: 90%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .modal h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal p {
+    font-size: 0.82rem;
+    color: var(--slate);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .modal-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--slate2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  .modal input[type="text"] {
+    width: 100%;
+    background: rgba(19,30,49,0.8);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 0.82rem;
+    padding: 9px 12px;
+    font-family: var(--mono);
+    transition: all 0.15s;
+  }
+  .modal input[type="text"]:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(30,111,230,0.2);
+  }
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── TOAST ── */
+  .save-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--navy3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 999;
+  }
+  .save-toast.show   { opacity: 1; transform: translateY(0); }
+  .save-toast.success { color: var(--green); border-color: rgba(34,197,94,0.3); }
+  .save-toast.error   { color: var(--red);   border-color: rgba(239,68,68,0.3); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .main { padding: 12px 12px 30px; }
+    .header {
+      height: auto;
+      min-height: 60px;
+      padding: 12px 14px;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .header-brand {
+      width: 100%;
+      justify-content: center;
+      gap: 10px;
+    }
+    .brand-title {
+      position: static;
+      transform: none;
+      font-size: 0.95rem;
+      letter-spacing: 1.5px;
+      white-space: normal;
+      line-height: 1.2;
+      text-align: center;
+      max-width: 100%;
+    }
+    .header-meta {
+      width: 100%;
+      justify-content: center;
+      margin-left: 0;
+      gap: 8px;
+    }
+    .meta-chip {
+      flex: 1 1 140px;
+      justify-content: center;
+    }
+    .action-bar {
+      position: static;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 0 14px;
+      margin-bottom: 12px;
+      background: transparent;
+      backdrop-filter: none;
+    }
+    .action-bar .btn { width: 100%; justify-content: center; }
+    .action-send-btn { min-width: 100%; min-height: 54px; font-size: 1rem; }
+    .dashboard-grid { gap: 14px; }
+    .table-card { border-radius: 14px; }
+    .card-header {
+      padding: 12px 14px;
+      align-items: center;
+    }
+    .card-title { font-size: 0.92rem; }
+    table { min-width: 520px; font-size: 0.9rem; }
+    thead th { padding: 12px 10px; font-size: 0.8rem; }
+    thead th:first-child { width: 58%; padding-left: 14px; }
+    tbody td { padding: 8px 10px; }
+    tbody td:first-child { padding-left: 14px; font-size: 0.84rem; }
+    input[type="number"] { font-size: 0.9rem; padding: 9px 10px; }
+    .note-textarea { min-height: 76px; font-size: 0.9rem; }
+    .modal { width: calc(100% - 24px); padding: 20px 16px; }
+    .modal-footer { flex-direction: column-reverse; }
+    .modal-footer .btn { width: 100%; justify-content: center; }
+    .save-toast { left: 12px; right: 12px; bottom: 12px; justify-content: center; }
+  }
+
+  @media (max-width: 520px) {
+    .main { padding: 10px 10px 24px; }
+    .header { padding: 10px 12px; }
+    .brand-title { font-size: 0.86rem; letter-spacing: 1px; }
+    .meta-chip {
+      flex: 1 1 100%;
+      font-size: 0.68rem;
+      padding: 4px 8px;
+    }
+    .action-send-btn {
+      min-height: 50px;
+      padding: 11px 16px;
+      font-size: 0.92rem;
+    }
+    .card-header { padding: 11px 12px; }
+    .card-header-icon {
+      width: 30px;
+      height: 30px;
+      font-size: 0.92rem;
+    }
+    .card-title { font-size: 0.88rem; }
+    table { min-width: 480px; }
+    thead th { padding: 10px 8px; }
+    thead th:first-child { width: 54%; }
+    tbody td:first-child { font-size: 0.8rem; }
+    input[type="number"] { font-size: 0.86rem; padding: 8px; }
+    .sub-header td {
+      font-size: 0.68rem !important;
+      padding: 8px 12px !important;
+    }
+    .note-block { padding: 12px; }
+    .note-textarea { min-height: 72px; padding: 10px 12px; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--navy3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--slate2); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="brand-dot"></div>
+    <span class="brand-title">ПД-6 /Хяналтын самбар/</span>
+  </div>
+  <div class="header-meta">
+    <div class="meta-chip">📅 <span class="val" id="currentDate">—</span></div>
+    <div class="meta-chip">🕐 <span class="val" id="currentTime">—</span></div>
+  </div>
+</header>
+
+<!-- GOOGLE SHEETS MODAL -->
+<div id="sheetsModal" class="modal-overlay">
+  <div class="modal">
+    <h3>Замын ангийн ПЧД-д илгээх</h3>
+    <div class="modal-label">Apps Script Web App URL</div>
+    <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/...">
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSheetsModal()">Болих</button>
+      <button class="btn btn-gold" id="sendBtn" onclick="sendToSheets()">📤 Илгээх</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE TOAST -->
+<div id="saveToast" class="save-toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMsg">Хадгалагдлаа</span>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="action-bar">
+    <button class="btn btn-gold action-send-btn" onclick="sendToSheets()">📤 ПЧД-рүү илгээх</button>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- 1. Ирц бүртгэл -->
+    <div class="table-card">
+      <div class="card-header">
+        <div class="card-header-icon icon-blue">🧑‍💼</div>
+        <span class="card-title">Ирц бүртгэл</span>
+      </div>
+      <table id="tbl-irc">
+        <thead>
+          <tr><th>Үзүүлэлт</th><th>Өнөөдрийн утга</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Батлагдсан орон тоо</td><td><input type="number" class="base-count" min="0" value="25"></td></tr>
+          <tr><td>Өвчтэй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Чөлөөтэй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Ээлжийн амралт</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Томилолт</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Ажил тасалсан</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Бусад шалтгаанаар</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Ажилд (авто)</td><td><input type="number" class="readonly-input" readonly></td></tr>
+          <tr class="sub-header"><td colspan="2">Ажил үүргийн хуваарилалт</td></tr>
+          <tr><td>ПД, ПДБ</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Замчин</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Эрэгтэй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Эмэгтэй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Тор засагч</td><td><input type="number" min="0"></td></tr>
+            <tr><td>Бусад ажилд</td><td><input type="number" class="readonly-input" readonly></td></tr>
+          <tr><td>Шалтгаантай</td><td><input type="number" class="readonly-input" readonly></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2. ХАБЭА бүртгэл -->
+    <div class="table-card">
+      <div class="card-header">
+        <div class="card-header-icon icon-gold">🦺</div>
+        <span class="card-title">ХАБЭА бүртгэл</span>
+      </div>
+      <table id="tbl-habea">
+        <thead>
+          <tr><th>Үзүүлэлт</th><th>Өнөөдрийн утга</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1-р шатны үзлэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>2-р шатны үзлэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>3-р шатны үзлэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>А-744 илрэсэн</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Ээлжит бус үзлэг</td><td><input type="number" min="0"></td></tr>
+          <tr class="sub-header"><td colspan="2">Илрэсэн үл тохирлын төрөл ангилал</td></tr>
+          <tr><td>Тоног төхөөрөмжтэй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Багаж материалтай</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Машин механизм</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Цахилгааны монтаж</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Ажлын хувцас</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Бичиг баримт</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Галын аюулгүй байдал</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Бусад</td><td><input type="number" min="0"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3. Паспортын үзлэг -->
+    <div class="table-card">
+      <div class="card-header">
+        <div class="card-header-icon icon-green">🪵</div>
+        <span class="card-title">Паспортын үзлэг</span>
+      </div>
+      <table id="tbl-passport">
+        <thead>
+          <tr><th>Үзүүлэлт</th><th>Өнөөдрийн утга</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Бүртгэлтэй нийт дэр мод</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Нийт тэнцэхгүй дэр мод</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дэр модны 3-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дэр модны 4-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дэр модны 5-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Солих шаардлагатай дэр</td><td><input type="number" class="readonly-input" readonly></td></tr>
+          <tr><td>Дэр мод сольсон</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дэр мод үлдсэн</td><td><input type="number" min="0"></td></tr>
+          <tr class="sub-header"><td colspan="2">Бүртгэлтэй нийт сумын дүнз</td></tr>
+          <tr><td>Нийт тэнцэхгүй дүнз</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дүнзний 5-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дүнзний 4-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дүнзний 3-дараалсан цэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Солих шаардлагатай дүнз</td><td><input type="number" min="0"></td></tr>
+          <tr><td>6 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>5.7 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>5.5 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>5.2 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>5 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>4.7 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>4.4 метр</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дүнз сольсон</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Дүнз үлдсэн</td><td><input type="number" min="0"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4. ГТХАБ бүртгэл -->
+    <div class="table-card">
+      <div class="card-header">
+        <div class="card-header-icon icon-purple">🔧</div>
+        <span class="card-title">ГТХАБ бүртгэл</span>
+      </div>
+      <table id="tbl-gtkhab">
+        <thead>
+          <tr><th>Үзүүлэлт</th><th>Өнөөдрийн утга</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Балын төл./Гүйцэтгэл</td><td><input type="number" min="0"></td></tr>
+          <tr><td>2* гэмтэл</td><td><input type="number" min="0"></td></tr>
+          <tr><td>3-р зэрэг</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Үүрэггүй</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Зурмагийн тасалдал</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Зам төмрийн гэмтэл</td><td><input type="number" min="0"></td></tr>
+          <tr><td>Сумын металл</td><td><input type="number" min="0"></td></tr>
+        </tbody>
+      </table>
+      <div class="note-block">
+        <label class="note-label" for="gtkhabSuggestion">Дэвшүүлэх санал, хүсэлт</label>
+        <textarea id="gtkhabSuggestion" class="note-textarea" data-daily-field="gtkhabSuggestion" placeholder="Нэмэлт санал, тайлбар оруулна уу..."></textarea>
+      </div>
+    </div>
+
+  </div><!-- /.dashboard-grid -->
+</main>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+// ⭐ ЭНЭ хуудасны өгөгдөл орох ШИТНИЙ НЭР.
+//    Apps Script-ийн sheet нэртэй яг ижил байх ёстой.
+const PAGE_SHEET_NAME = 'pd-6';
+
+const FORM_DATA_KEY = 'news2PersistentFormData';
+const LEGACY_SHEETS_URL_KEY = 'sheetsWebAppUrl';
+const SHEETS_URL_KEY = `${LEGACY_SHEETS_URL_KEY}:${window.location.pathname}`;
+const STORAGE_SCHEMA_VERSION = 'v2';
+// ↓ Энд та өөрийн Apps Script URL-аа оруулна уу (анхдагч утга)
+const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbympK50MnNYLamrhNLarI8KOp-K_teigMZZ7fdbOHiofeh35uKDT2devXVX1CFCgoI/exec';
+const OLD_SHEETS_URLS = [
+  'https://script.google.com/macros/s/AKfycby1LewmrUD9FnBm93Liiv3ebkuWf9-Qf096M6MmJRAKnL0jTCCmH1alHewYO55fdPM/exec',
+  'https://script.google.com/macros/s/AKfycbw3gB0rx0pk2Vwh0lr1h8qoLoVo2NfysVbgLeAFEYSx8MZqoKUrp4a2aQWHC-VcRif4/exec',
+  'https://script.google.com/macros/s/AKfycbzaBeZ_ll0cj6YG93QMiCiE7fLB6YEQqqRytl_3SSCTG9_M1lZeaLBVHloLhE0lqc7l/exec',
+  'https://script.google.com/macros/s/AKfycbw8GPVw0S5pJ3xjdm1MIx8tFWSa-JgG1ltt0MReY8cZEUe97cQQQjA0uEskgu496SUx/exec',
+  'https://script.google.com/macros/s/AKfycbw0WLqhqeRa-IkC_CmJmNgyA2QZHWKQA7fTSw2cskH41sLrAwZGFmuGM8x3DtP2rLa0/exec'
+];
+let lastGenderEdited = 'eregtei';
+
+// ═══════════════════════════════════════════
+//  DATE HELPERS
+// ═══════════════════════════════════════════
+function getTodayKey() {
+  const d = new Date();
+  return `day_${d.getFullYear()}_${String(d.getMonth()+1).padStart(2,'0')}_${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDateMN(d) {
+  const months = ['1-р сар','2-р сар','3-р сар','4-р сар','5-р сар','6-р сар',
+                  '7-р сар','8-р сар','9-р сар','10-р сар','11-р сар','12-р сар'];
+  return `${d.getFullYear()} оны ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function formatDateISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function isEditWindow() {
+  const h = new Date().getHours();
+  return h >= 8 && h < 17;
+}
+
+// ═══════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const el = document.getElementById('currentDate');
+  const et = document.getElementById('currentTime');
+  if (el) el.textContent = formatDateMN(now);
+  if (et) et.textContent =
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════════
+//  STORAGE (localStorage — өөрчлөх хүртэл хадгална)
+// ═══════════════════════════════════════════
+function getLatestLegacyStoredData() {
+  let latest = null;
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || !/^day_\d{4}_\d{2}_\d{2}$/.test(key)) continue;
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || '{}');
+      if (!parsed || parsed.schemaVersion !== STORAGE_SCHEMA_VERSION || !parsed.savedAt) continue;
+      if (!latest || parsed.savedAt > latest.savedAt) {
+        latest = parsed;
+      }
+    } catch (_) {
+      // Ignore malformed legacy entries.
+    }
+  }
+
+  return latest;
+}
+
+function getStoredFormState() {
+  const persistentRaw = localStorage.getItem(FORM_DATA_KEY);
+  if (persistentRaw) {
+    try {
+      return JSON.parse(persistentRaw);
+    } catch (_) {
+      localStorage.removeItem(FORM_DATA_KEY);
+    }
+  }
+
+  const legacy = getLatestLegacyStoredData();
+  if (legacy) {
+    localStorage.setItem(FORM_DATA_KEY, JSON.stringify(legacy));
+    return legacy;
+  }
+
+  return {};
+}
+
+function saveData() {
+  const data = {};
+  document.querySelectorAll('input[type="number"]').forEach((inp, i) => {
+    const stableKey = getNumericInputStorageKey(inp, i);
+    data[stableKey] = inp.value;
+  });
+  document.querySelectorAll('[data-daily-field]').forEach(field => {
+    data[field.dataset.dailyField] = field.value;
+  });
+  localStorage.setItem(FORM_DATA_KEY, JSON.stringify({
+    schemaVersion: STORAGE_SCHEMA_VERSION,
+    data,
+    savedAt: new Date().toISOString()
+  }));
+}
+
+function loadData() {
+  const stored = getStoredFormState();
+  const schemaVersion = stored.schemaVersion || 'legacy';
+  if (schemaVersion !== STORAGE_SCHEMA_VERSION) {
+    // Ignore stale layouts/keys so old values (e.g., 7) do not override current inputs.
+    return;
+  }
+
+  const data = stored.data || {};
+  const hasStableKeys = Object.keys(data).some((k) => k.includes('::'));
+  document.querySelectorAll('input[type="number"]').forEach((inp, i) => {
+    const stableKey = getNumericInputStorageKey(inp, i);
+    if (hasStableKeys) {
+      inp.value = data[stableKey] ?? inp.value;
+      return;
+    }
+    // Legacy index-based saves can be misaligned when row structure changes.
+    // Keep current HTML defaults/blank values instead of loading risky indices.
+    inp.value = inp.value;
+  });
+  document.querySelectorAll('[data-daily-field]').forEach(field => {
+    field.value = data[field.dataset.dailyField] ?? '';
+  });
+  calculateAll();
+}
+
+function getNumericInputStorageKey(inp, fallbackIndex) {
+  const row = inp.closest('tr');
+  const table = inp.closest('table');
+  const tableId = table?.id || 'table';
+  const rowLabel = row?.querySelector('td:first-child')?.textContent?.trim() || `row-${fallbackIndex}`;
+  const rowIndex = row && table
+    ? Array.from(table.querySelectorAll('tbody tr')).indexOf(row)
+    : fallbackIndex;
+
+  // Include row index to avoid collisions between duplicate labels (e.g., "Бусад").
+  return `${tableId}::${rowIndex}::${rowLabel}`;
+}
+
+// ═══════════════════════════════════════════
+//  CALCULATIONS
+// ═══════════════════════════════════════════
+function calculateAll() {
+  const irc = document.getElementById('tbl-irc');
+  if (irc) {
+    const rows = Array.from(irc.querySelectorAll('tbody tr:not(.sub-header)'));
+    const base   = parseInt(rows[0]?.querySelector('input')?.value) || 0;
+    let absent   = 0;
+    for (let i = 1; i <= 6; i++) absent += parseInt(rows[i]?.querySelector('input')?.value) || 0;
+
+    const ajildInp = rows[7]?.querySelector('input');
+    const pdInp     = rows[8]?.querySelector('input');
+    const zamchinInp = rows[9]?.querySelector('input');
+    const torInp    = rows[12]?.querySelector('input');
+    const busadInp  = rows[13]?.querySelector('input');
+    const oronInp  = rows[14]?.querySelector('input'); // last row
+    const ajild = Math.max(0, base - absent);
+    const pd = parseInt(pdInp?.value, 10) || 0;
+    const zamchin = parseInt(zamchinInp?.value, 10) || 0;
+    const tor = parseInt(torInp?.value, 10) || 0;
+
+    if (ajildInp) ajildInp.value = ajild;
+    if (busadInp) busadInp.value = Math.max(0, ajild - pd - zamchin - tor);
+    if (oronInp)  oronInp.value  = absent;
+  }
+
+  const passport = document.getElementById('tbl-passport');
+  if (passport) {
+    const rows = Array.from(passport.querySelectorAll('tbody tr:not(.sub-header)'));
+    const fiveSeq = parseInt(rows[2]?.querySelector('input')?.value, 10) || 0;
+    const fourSeq = parseInt(rows[3]?.querySelector('input')?.value, 10) || 0;
+    const threeSeq = parseInt(rows[4]?.querySelector('input')?.value, 10) || 0;
+    const replaceNeededInp = rows[5]?.querySelector('input');
+    const replacedInp = rows[6]?.querySelector('input');
+    const remainingInp = rows[7]?.querySelector('input');
+    if (replaceNeededInp) replaceNeededInp.value = fiveSeq + fourSeq + threeSeq;
+    if (remainingInp) {
+      const replaceNeeded = parseInt(replaceNeededInp?.value, 10) || 0;
+      const replaced = parseInt(replacedInp?.value, 10) || 0;
+      remainingInp.value = Math.max(0, replaceNeeded - replaced);
+    }
+  }
+}
+
+function getIrcInputByLabel(labelText) {
+  const irc = document.getElementById('tbl-irc');
+  if (!irc) return null;
+
+  const rows = Array.from(irc.querySelectorAll('tbody tr:not(.sub-header)'));
+  const row = rows.find(tr => (tr.querySelector('td:first-child')?.textContent || '').trim() === labelText);
+  return row?.querySelector('input[type="number"]') || null;
+}
+
+function syncGenderCounts(changedField = '') {
+  const zamchinInp = getIrcInputByLabel('Замчин');
+  const eregteiInp = getIrcInputByLabel('Эрэгтэй');
+  const emegteiInp = getIrcInputByLabel('Эмэгтэй');
+  if (!zamchinInp || !eregteiInp || !emegteiInp) return;
+
+  const zamchin = parseInt(zamchinInp.value, 10) || 0;
+  let eregtei = parseInt(eregteiInp.value, 10) || 0;
+  let emegtei = parseInt(emegteiInp.value, 10) || 0;
+
+  if (changedField === 'zamchin') {
+    if (lastGenderEdited === 'eregtei') {
+      emegtei = Math.max(0, zamchin - eregtei);
+      emegteiInp.value = emegtei;
+    } else if (lastGenderEdited === 'emegtei') {
+      eregtei = Math.max(0, zamchin - emegtei);
+      eregteiInp.value = eregtei;
+    } else {
+      emegtei = Math.max(0, zamchin - eregtei);
+      emegteiInp.value = emegtei;
+    }
+    return;
+  }
+
+  if (changedField === 'eregtei') {
+    emegtei = Math.max(0, zamchin - eregtei);
+    emegteiInp.value = emegtei;
+    return;
+  }
+
+  if (changedField === 'emegtei') {
+    eregtei = Math.max(0, zamchin - emegtei);
+    eregteiInp.value = eregtei;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  MANUAL SAVE
+// ═══════════════════════════════════════════
+function manualSave() {
+  saveData();
+  showToast('✅ Хадгалагдлаа', 'success');
+}
+
+// ═══════════════════════════════════════════
+//  AUTOSAVE (every 2 min during edit window)
+// ═══════════════════════════════════════════
+function autoSave() {
+  if (!isEditWindow()) return;
+  saveData();
+}
+
+// ═══════════════════════════════════════════
+//  DATA COLLECT — тухайн хүснэгтийн бүх мөр
+// ═══════════════════════════════════════════
+function collectTable(tableId) {
+  const tbl = document.getElementById(tableId);
+  if (!tbl) return [];
+  const rows = [];
+
+  tbl.querySelectorAll('tbody tr').forEach(tr => {
+    if (tr.classList.contains('sub-header')) {
+      const subHeaderLabel = tr.querySelector('td')?.textContent.trim() || '';
+      rows.push({ type: 'subheader', label: subHeaderLabel });
+      return;
+    }
+    const label = tr.querySelector('td:first-child')?.textContent.trim() || '';
+    const inp   = tr.querySelector('input[type="number"]');
+    const val   = inp ? (parseInt(inp.value) || 0) : 0;
+    rows.push({ type: 'data', label, value: val });
+  });
+  return rows;
+}
+
+function collectGtkhabRows() {
+  const rows = collectTable('tbl-gtkhab');
+  const suggestion = document.getElementById('gtkhabSuggestion')?.value.trim() || '';
+  // Санал нь текст учир тусдаа хадгална — тоо биш
+  rows.push({ type: 'data', label: 'Санал, хүсэлт', value: suggestion });
+  return rows;
+}
+
+function getCanonicalPayloadLabel(sectionKey, label) {
+  const map = {
+    irc: {
+      'Бусад': 'Бусад',
+      'Бусад ажилд': 'Бусад',
+      'Бусад ажилд-': 'Бусад',
+      'Орон тоо дутуу (авто)': 'Орон тоо дутуу',
+      '-Шалтгаантай': 'Орон тоо дутуу',
+      '- Шалтгаантай': 'Орон тоо дутуу',
+      'Бусад шалтгаанаар': 'Тасалсан',
+    },
+    habea: {
+      'Галын аюулгүй байдал': 'Галын'
+    },
+    passport: {
+      'Дэр модны 8-дараалсан цэг': 'Дэр модны 5- дараалсан цэг',
+      'Дэр модны 7-дараалсан цэг': 'Дэр модны 4- дараалсан цэг',
+      'Дэр модны 6-дараалсан цэг': 'Дэр модны 3- дараалсан цэг',
+      'Дэр мод сольсон': '-Солигдсон дэр',
+      'Дүнзний 5-дараалсан цэг': 'Дүнзний 5- дараалсан цэг',
+      'Дүнзний 4-дараалсан цэг': 'Дүнзний 4- дараалсан цэг',
+      'Дүнзний 3-дараалсан цэг': 'Дүнзний 3- дараалсан цэг'
+    },
+    gtkhab: {}
+  };
+
+  return map[sectionKey]?.[label] || label;
+}
+
+function getAdditionalPayloadNames(sectionKey, label) {
+  if (sectionKey === 'irc' && label === 'Бусад шалтгаанаар') {
+    return ['Бусад шалтгаанаар'];
+  }
+
+  return [];
+}
+
+function buildLegacyRows(now) {
+  const rows = [
+    { name: 'Огноо', pd: { 1: formatDateISO(now) } },
+    { name: 'Монгол огноо', pd: { 1: formatDateMN(now) } }
+  ];
+
+  const sections = [
+    ['irc', collectTable('tbl-irc')],
+    ['habea', collectTable('tbl-habea')],
+    ['passport', collectTable('tbl-passport')],
+    ['gtkhab', collectGtkhabRows()]
+  ];
+
+  sections.forEach(([sectionKey, sectionRows]) => {
+    sectionRows.forEach(row => {
+      if (row.type !== 'data') return;
+      const names = [
+        getCanonicalPayloadLabel(sectionKey, row.label),
+        ...getAdditionalPayloadNames(sectionKey, row.label)
+      ].filter(Boolean);
+
+      names.forEach((name) => {
+        rows.push({
+          name,
+          pd: { 1: row.value }
+        });
+      });
+    });
+  });
+
+  return rows;
+}
+
+function buildPd1Object(rows) {
+  return rows.reduce((acc, row) => {
+    if (!row?.name) return acc;
+    acc[row.name] = row.pd?.[1] ?? '';
+    return acc;
+  }, {});
+}
+
+function getNextSuggestionNumber(text) {
+  const numberedLines = text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => /^\d+\.\s/.test(line));
+
+  if (!numberedLines.length) return 1;
+
+  const lastLine = numberedLines[numberedLines.length - 1];
+  const lastNumber = parseInt(lastLine.match(/^(\d+)\./)?.[1] || '0', 10);
+  return lastNumber + 1;
+}
+
+function insertSuggestionNumber(textarea) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const before = textarea.value.slice(0, start);
+  const after = textarea.value.slice(end);
+  const nextNumber = getNextSuggestionNumber(before);
+  const insertText = `\n${nextNumber}. `;
+
+  textarea.value = `${before}${insertText}${after}`;
+  const nextCaret = start + insertText.length;
+  textarea.setSelectionRange(nextCaret, nextCaret);
+}
+
+// ═══════════════════════════════════════════
+//  BUILD PAYLOAD — өнөөдрийн бүх мэдээлэл
+// ═══════════════════════════════════════════
+function buildPayload() {
+  const now = new Date();
+  const isoDate = formatDateISO(now);
+  const mongolianDate = formatDateMN(now);
+  const legacyRows = buildLegacyRows(now);
+  return {
+    sheetName: PAGE_SHEET_NAME,
+    date:      mongolianDate,
+    dateISO:   isoDate,
+    dateMN:    mongolianDate,
+    savedAt:   now.toISOString(),
+    pdCount:   1,
+    rows:      legacyRows,
+    pd1:       buildPd1Object(legacyRows),
+    sections: {
+      irc:     { label: 'Ирц бүртгэл',    rows: collectTable('tbl-irc')     },
+      habea:   { label: 'ХАБЭА бүртгэл',  rows: collectTable('tbl-habea')   },
+      passport:{ label: 'Паспортын үзлэг', rows: collectTable('tbl-passport')},
+      gtkhab:  { label: 'ГТХАБ бүртгэл',  rows: collectGtkhabRows()         },
+    }
+  };
+}
+
+// ═══════════════════════════════════════════
+//  GOOGLE SHEETS URL
+// ═══════════════════════════════════════════
+function getSheetsUrl() {
+  const stored = (localStorage.getItem(SHEETS_URL_KEY) || localStorage.getItem(LEGACY_SHEETS_URL_KEY) || '').trim();
+  if (!stored) return DEFAULT_URL;
+  if (OLD_SHEETS_URLS.includes(stored)) {
+    localStorage.setItem(SHEETS_URL_KEY, DEFAULT_URL);
+    return DEFAULT_URL;
+  }
+  return stored;
+}
+function saveSheetsUrl(url) {
+  localStorage.setItem(SHEETS_URL_KEY, url);
+  if (localStorage.getItem(LEGACY_SHEETS_URL_KEY)) {
+    localStorage.removeItem(LEGACY_SHEETS_URL_KEY);
+  }
+}
+
+function setSendButtonsState(isBusy) {
+  const label = isBusy ? '⏳ Илгээж байна...' : '📤 Илгээх';
+  document.querySelectorAll('#sendBtn, .action-send-btn').forEach(btn => {
+    btn.disabled = isBusy;
+    if (btn.id === 'sendBtn') {
+      btn.textContent = label;
+      return;
+    }
+    btn.textContent = isBusy ? '⏳ ПЧД-рүү илгээж байна...' : '📤 ПЧД-рүү илгээх';
+  });
+}
+
+async function postToSheets(url, payload) {
+  const response = await fetch(url, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'text/plain;charset=UTF-8'
+    },
+    body: JSON.stringify(payload),
+    keepalive: true,
+    redirect: 'follow'
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const responseText = await response.text();
+  let result = null;
+
+  try {
+    result = responseText ? JSON.parse(responseText) : null;
+  } catch (error) {
+    const syntaxErrorMatch = responseText.match(/SyntaxError:[^<\n]+/i);
+    if (syntaxErrorMatch) {
+      throw new Error(`Apps Script deploy алдаатай байна: ${syntaxErrorMatch[0]}`);
+    }
+    if (/<html/i.test(responseText)) {
+      throw new Error('Apps Script JSON биш HTML алдаа буцаалаа. Deploy-оо шинэчилнэ үү.');
+    }
+    throw new Error('Apps Script танигдахгүй хариу буцаалаа.');
+  }
+
+  if (!result || result.status !== 'ok') {
+    throw new Error(result?.message || 'Google Sheets рүү хадгалж чадсангүй.');
+  }
+
+  if (result.rowUpdated === false) {
+    throw new Error('Apps Script хүсэлтийг хүлээж авсан ч pd-1 sheet дээр өнөөдрийн мөрийг update хийж чадсангүй. Sheet дээр тухайн огнооны мөр байгаа эсэхийг шалгана уу.');
+  }
+
+  return result;
+}
+
+function openSheetsModal() {
+  document.getElementById('sheetsUrl').value = getSheetsUrl();
+  document.getElementById('sheetsModal').classList.add('show');
+}
+function closeSheetsModal() {
+  document.getElementById('sheetsModal').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+//  SEND TO SHEETS  (fetch + no-cors fallback)
+// ═══════════════════════════════════════════
+async function sendToSheets() {
+  const urlInput = document.getElementById('sheetsUrl');
+  const url = (urlInput?.value || getSheetsUrl()).trim();
+
+  if (!url) {
+    alert('Apps Script Web App URL-аа оруулна уу!');
+    return;
+  }
+  if (!/\/exec/.test(url)) {
+    alert('Deploy хийсэн /exec URL оруулна уу!');
+    return;
+  }
+
+  saveSheetsUrl(url);
+  saveData();
+  setSendButtonsState(true);
+
+  const payload = buildPayload();
+
+  try {
+    await postToSheets(url, payload);
+    showToast('✅ Google Sheets руу илгээгдлээ', 'success');
+    closeSheetsModal();
+  } catch (err) {
+    showToast('❌ Алдаа: ' + err.message, 'error');
+  } finally {
+    setSendButtonsState(false);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+function showToast(msg, type = 'success') {
+  const t   = document.getElementById('saveToast');
+  const ico = document.getElementById('toastIcon');
+  const txt = document.getElementById('toastMsg');
+  ico.textContent = type === 'success' ? '✅' : '❌';
+  txt.textContent = msg;
+  t.className = `save-toast show ${type}`;
+  setTimeout(() => { t.className = 'save-toast'; }, 3000);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem(SHEETS_URL_KEY) && DEFAULT_URL) {
+    saveSheetsUrl(DEFAULT_URL);
+  }
+
+  loadData();
+  updateClock();
+
+  // Clock
+  setInterval(updateClock, 1000);
+  // Autosave every 2 min
+  setInterval(autoSave, 2 * 60 * 1000);
+
+  // Input listeners
+  document.querySelectorAll('input[type="number"]').forEach(inp => {
+    const label = inp.closest('tr')?.querySelector('td:first-child')?.textContent.trim();
+    const isGenderField = label === 'Замчин' || label === 'Эрэгтэй' || label === 'Эмэгтэй';
+
+    inp.addEventListener('input', () => {
+      if (label === 'Замчин') {
+        syncGenderCounts('zamchin');
+      } else if (label === 'Эрэгтэй') {
+        lastGenderEdited = 'eregtei';
+        syncGenderCounts('eregtei');
+      } else if (label === 'Эмэгтэй') {
+        lastGenderEdited = 'emegtei';
+        syncGenderCounts('emegtei');
+      }
+
+      calculateAll();
+      saveData();
+    });
+
+    if (isGenderField) {
+      inp.addEventListener('focus', () => {
+        inp.dataset.lastEdited = '1';
+      });
+    }
+  });
+
+  document.querySelectorAll('[data-daily-field]').forEach(field => {
+    field.addEventListener('input', () => {
+      saveData();
+    });
+
+    if (field.id === 'gtkhabSuggestion') {
+      field.addEventListener('focus', () => {
+        if (!field.value.trim()) {
+          field.value = '1. ';
+          field.setSelectionRange(field.value.length, field.value.length);
+          saveData();
+        }
+      });
+
+      field.addEventListener('keydown', event => {
+        if (event.key !== 'Enter') return;
+
+        event.preventDefault();
+        insertSuggestionNumber(field);
+        saveData();
+      });
+    }
+  });
+
+  syncGenderCounts();
+
+  // Modal backdrop close
+  document.getElementById('sheetsModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('sheetsModal')) closeSheetsModal();
+  });
+});
+</script>
+</body>
+</html>

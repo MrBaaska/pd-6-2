@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хатуу тооцоот багаж бүртгэл</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        /* Lucide icon-уудыг Tailwind-тэй ашиглахын тулд */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            pointer-events: none;
+        }
+        .number-cell {
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .number-cell--editable:hover {
+            background-color: #e0f2ff;
+        }
+        .number-cell--empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .number-cell--removed {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            font-weight: 600;
+        }
+        .number-cell--active {
+            background-color: #fff7d6;
+            color: #92400e;
+            font-weight: 600;
+        }
+        .number-cell--in-use {
+            background-color: #dcfce7;
+            color: #166534;
+            font-weight: 700;
+        }
+        .number-cell--editing {
+            padding: 0.25rem;
+            background-color: #dbeafe;
+        }
+        .number-input {
+            width: 100%;
+            min-width: 4rem;
+            border: 1px solid #2563eb;
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.5rem;
+            text-align: center;
+            outline: none;
+        }
+        .number-cell__content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+        .number-cell__delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            color: #dc2626;
+            background-color: #fee2e2;
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+        .number-cell__delete:hover {
+            background-color: #fecaca;
+        }
+        .usage-delete-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            color: #dc2626;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .usage-delete-button:hover {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        .usage-delete-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.72);
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-card {
+            width: min(100%, 34rem);
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+            overflow: hidden;
+        }
+        .qr-reader {
+            width: 100%;
+            min-height: 320px;
+        }
+        .qr-reader video {
+            border-radius: 0.75rem;
+        }
+        .scan-status {
+            min-height: 2.5rem;
+        }
+        .tool-menu-wrap {
+            position: relative;
+        }
+        .tool-menu-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            z-index: 30;
+            width: min(28rem, calc(100vw - 2rem));
+            border: 1px solid #cbd5e1;
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+        }
+        .tool-name-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.7rem;
+            border-radius: 9999px;
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .tool-name-chip__remove {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.45rem;
+            height: 1.45rem;
+            border-radius: 9999px;
+            background: rgba(239, 68, 68, 0.12);
+            color: #dc2626;
+            line-height: 1;
+        }
+        .tool-name-chip__remove:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-3xl font-bold text-gray-800">
+                    Хатуу тооцоот багаж бүртгэл
+                </h1>
+            </div>
+            
+            <div id="statsContainer" class="grid grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Нийт багаж</p>
+                    <p id="totalTools" class="text-3xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Ашиглалтад</p>
+                    <p id="usageTotal" class="text-3xl font-bold text-orange-600">0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600">Үлдэгдэл</p>
+                    <p id="remainingTotal" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">
+                    Багажны жагсаалт
+                </h2>
+                <div class="tool-menu-wrap flex items-center gap-2">
+                    <button id="toggleEditMode" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        <i data-lucide="edit-2" class="icon edit-icon" data-size="18"></i>
+                        <span class="edit-text">Засах</span>
+                    </button>
+                    <button id="toggleToolMenu" type="button" class="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition">
+                        <i data-lucide="plus" class="icon" data-size="18"></i>
+                        <span>Нэмэх</span>
+                    </button>
+
+                    <div id="toolMenuPanel" class="tool-menu-panel hidden p-4">
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-2 md:flex-row md:items-end">
+                                <div class="flex-1">
+                                    <label for="newToolName" class="mb-1 block text-sm font-medium text-gray-700">Шинэ багажны нэр</label>
+                                    <input id="newToolName" type="text" placeholder="Жишээ: Шрупны түлхүүр" class="w-full rounded-lg border border-gray-300 p-2" />
+                                </div>
+                                <button id="addToolName" type="button" class="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700">
+                                    Нэмэх
+                                </button>
+                            </div>
+
+                            <div>
+                                <p class="mb-2 text-sm font-medium text-gray-700">Одоогийн багажнууд</p>
+                                <div id="toolNameList" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="toolsTable" class="w-full border-collapse">
+                    <thead id="toolsTableHeader"></thead>
+                    <tbody id="toolsTableBody"></tbody>
+                    <tfoot id="toolsTableFooter"></tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                Ашиглалтын бүртгэл
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-6">
+                <select id="toolName" class="border border-gray-300 rounded-lg p-2">
+                    <option value="">Багажийн нэр</option>
+                </select>
+
+                <div>
+                    <input id="toolNumber" list="toolNumberOptions" type="text" placeholder="Дугаар" class="w-full border border-gray-300 rounded-lg p-2" disabled />
+                    <datalist id="toolNumberOptions"></datalist>
+                </div>
+
+                <select id="toolAction" class="border border-gray-300 rounded-lg p-2">
+                    <option value="">Зорилго</option>
+                    <option value="Ажилд ашиглах">Ажилд ашиглах</option>
+                    <option value="Засварт өгсөн">Засварт өгсөн</option>
+                    <option value="Томилолт">Томилолт</option>
+                    <option value="Стандарт бус">Стандарт бус</option>
+                    <option value="Бусад">Бусад</option>
+                </select>
+
+                <input type="text" id="toolComment" placeholder="Тайлбар (Хэн? Хэзээ? Юунд?)" class="border border-gray-300 rounded-lg p-2" />
+
+                <button id="scanQrButton" type="button" class="bg-sky-600 text-white rounded-lg px-4 py-2 hover:bg-sky-700 transition font-medium">
+                    QR уншуулах
+                </button>
+
+                <button id="addUsage" disabled class="bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition font-medium disabled:bg-gray-300 disabled:cursor-not-allowed">
+                    + Нэмэх
+                </button>
+            </div>
+
+            <div class="mb-4 flex items-center gap-3 text-sm text-gray-600">
+                <span class="font-medium text-gray-700">Бүртгэл:</span>
+                <span id="selectedRegistrant" class="rounded-full bg-sky-50 px-3 py-1 text-sky-700">QR уншаагүй</span>
+                <button id="clearRegistrant" type="button" class="text-red-600 hover:text-red-800">Цэвэрлэх</button>
+            </div>
+
+            <div id="sheetStatus" class="mb-4 inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
+                Google Sheets холболтын төлөв хараахан шинэчлэгдээгүй байна
+            </div>
+
+            <div class="mb-4 flex flex-wrap items-center gap-2" style="display:none">
+                <input id="manualRegistrant" type="text" placeholder="QR болохгүй бол нэрийг гараар оруулна" class="min-w-[240px] flex-1 border border-gray-300 rounded-lg p-2" />
+                <button id="applyManualRegistrant" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Нэр сонгох
+                </button>
+            </div>
+
+      
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-3">№</th>
+                            <th class="border border-gray-300 p-3">Нэр</th>
+                            <th class="border border-gray-300 p-3">Дугаар</th>
+                            <th class="border border-gray-300 p-3">Зорилго</th>
+                            <th class="border border-gray-300 p-3">Тайлбар</th>
+                            <th class="border border-gray-300 p-3">Огноо</th>
+                            <th class="border border-gray-300 p-3">Бүртгэл</th>
+                            <th class="border border-gray-300 p-3">Үйлдэл</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageTableBody">
+                        </tbody>
+                    <tfoot id="usageTableFooter"></tfoot>
+                </table>
+                <div class="mt-8">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Ашиглалтын бүртгэлийн түүх</h2>
+                    <div id="usageHistory"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal">
+        <div class="modal-card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-gray-800">QR код уншуулах</h3>
+                <button id="closeQrModal" type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-700">&times;</button>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Гар утасны камераар QR уншуулахад нэр автоматаар бүртгэлд хадгалагдана.</p>
+            <div id="qrReader" class="qr-reader"></div>
+            <div id="scanStatus" class="scan-status mt-4 text-sm text-gray-600"></div>
+        </div>
+    </div>
+
+    <script>
+        // Багажны анхны жагсаалт
+        const initialTools = [
+            { id: 1, name: 'ЛАП', numbers: ['021', '022', '023', '024', '025'] },
+            { id: 2, name: 'Замын түлхүүр', numbers: ['021', '022', '023', '024', '025', '026'] },
+            { id: 3, name: 'АРС түлхүүр', numbers: ['021', '022', '023', '024', '025', '026', '027'] },
+            { id: 4, name: 'Босоо түлхүүр', numbers: ['021', '022', '023', '024', '025', '026', '027', '028'] }
+        ];
+
+        // Төлөвүүд (State)
+        let tools = [];
+        let removedItems = {};
+        let usageData = [];
+        let editMode = false;
+        let editingCellKey = null;
+        let selectedRegistrantName = '';
+        let html5QrCode = null;
+        let qrScanInProgress = false;
+        let qrScannerStarting = false;
+        let qrScannerStopPromise = null;
+        let qrStatusResetTimer = null;
+        let qrLastDecodedText = '';
+        let qrLastDecodedAt = 0;
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ9OzUQ24_sual7O7sCUiAdWEjqiKzYIH5Z4FfTdMchyoSqTg_3vqMcs9P7YukyGTw/exec';
+        const FALLBACK_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ9OzUQ24_sual7O7sCUiAdWEjqiKzYIH5Z4FfTdMchyoSqTg_3vqMcs9P7YukyGTw/exec';
+        const TARGET_SPREADSHEET_ID = '1Z6TwZmJ-CUz89Yg7ZiVnH-KtOY1kgcm_8sPZmayzjF4';
+        const TARGET_SHEET_GID = '0';
+        const SHEETS_SYNC_EVENT_TYPE = 'tool_state_snapshot';
+        const STORAGE_RESET_VERSION = '2026-05-10-usage-reset-v1';
+
+        function getSheetScriptUrls() {
+            return [SCRIPT_URL, FALLBACK_SCRIPT_URL].filter(Boolean);
+        }
+
+        function ensureUsageTimestamps() {
+            usageData.forEach(entry => {
+                if (!entry.timestamp) {
+                    entry.timestamp = entry.id || Date.now();
+                }
+                if (!('registrant' in entry)) {
+                    entry.registrant = '';
+                }
+            });
+        }
+
+        function getEntryTimestamp(entry) {
+            return entry.timestamp || entry.id || 0;
+        }
+
+        function getActiveUsageKeySet() {
+            const activeEntries = usageData.filter(item => !item.deleted);
+            return new Set(activeEntries.map(item => `${item.name}||${item.number}`));
+        }
+
+        function getAvailableCountByTool(tool, activeUsageKeys) {
+            return tool.numbers.filter((number, idx) => {
+                const key = `${tool.id}-${idx}`;
+                if (removedItems[key]) return false;
+                const usageKey = `${tool.name}||${number}`;
+                return !activeUsageKeys.has(usageKey);
+            }).length;
+        }
+
+        function getToolById(toolId) {
+            return tools.find(tool => tool.id === toolId);
+        }
+
+        function getNextToolId() {
+            return tools.reduce((maxId, tool) => Math.max(maxId, Number(tool.id) || 0), 0) + 1;
+        }
+
+        function normalizeToolName(value) {
+            return normalizeSheetValue(value).replace(/\s+/g, ' ');
+        }
+
+        function hasToolName(toolName) {
+            const normalized = toolName.toLowerCase();
+            return tools.some(tool => tool.name.toLowerCase() === normalized);
+        }
+
+        function isDuplicateNumber(tool, candidateNumber, currentIndex) {
+            return tool.numbers.some((number, idx) => idx !== currentIndex && number === candidateNumber);
+        }
+
+        function syncEditedNumberReferences(tool, oldNumber, newNumber) {
+            usageData.forEach(entry => {
+                if (entry.name === tool.name && entry.number === oldNumber) {
+                    entry.number = newNumber;
+                }
+            });
+        }
+
+        function restoreEditedNumberReferences(tool, numberToRestore) {
+            const matchingEntries = usageData
+                .filter(entry => entry.name === tool.name && entry.number === numberToRestore && entry.deleted)
+                .sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a));
+
+            if (matchingEntries.length) {
+                matchingEntries[0].deleted = false;
+            }
+        }
+
+        function removeEditedNumberReferences(tool, numberToRemove) {
+            usageData = usageData.map(entry => {
+                if (entry.name === tool.name && entry.number === numberToRemove && !entry.deleted) {
+                    return { ...entry, deleted: true };
+                }
+                return entry;
+            });
+        }
+
+        function setRemovedItemState(toolId, numIdx, isRemoved) {
+            const key = `${toolId}-${numIdx}`;
+            const tool = getToolById(toolId);
+            const number = tool?.numbers[numIdx];
+
+            if (!tool || !number) {
+                return;
+            }
+
+            if (isRemoved) {
+                removedItems[key] = true;
+                removeEditedNumberReferences(tool, number);
+            } else {
+                delete removedItems[key];
+                restoreEditedNumberReferences(tool, number);
+            }
+        }
+        
+        // DOM элементүүд
+        const toolNameSelect = document.getElementById('toolName');
+        const toggleToolMenuButton = document.getElementById('toggleToolMenu');
+        const toolMenuPanel = document.getElementById('toolMenuPanel');
+        const newToolNameInput = document.getElementById('newToolName');
+        const addToolNameButton = document.getElementById('addToolName');
+        const toolNameList = document.getElementById('toolNameList');
+        const toolNumberSelect = document.getElementById('toolNumber');
+        const toolNumberOptions = document.getElementById('toolNumberOptions');
+        const toolCommentInput = document.getElementById('toolComment');
+        const toolActionSelect = document.getElementById('toolAction');
+        const addUsageButton = document.getElementById('addUsage');
+        const scanQrButton = document.getElementById('scanQrButton');
+        const selectedRegistrantBadge = document.getElementById('selectedRegistrant');
+        const clearRegistrantButton = document.getElementById('clearRegistrant');
+        const manualRegistrantInput = document.getElementById('manualRegistrant');
+        const applyManualRegistrantButton = document.getElementById('applyManualRegistrant');
+        const sheetStatus = document.getElementById('sheetStatus');
+        const qrModal = document.getElementById('qrModal');
+        const scanStatus = document.getElementById('scanStatus');
+
+        // ===================================
+        // 1. Local Storage-ийн функцууд
+        // ===================================
+
+        function getInitialToolsState() {
+            return JSON.parse(JSON.stringify(initialTools));
+        }
+
+        function resetUsageWorkspaceState() {
+            tools = getInitialToolsState();
+            removedItems = {};
+            usageData = [];
+            localStorage.setItem('storageResetVersion', STORAGE_RESET_VERSION);
+            saveState();
+        }
+
+        function loadState() {
+            try {
+                const appliedResetVersion = localStorage.getItem('storageResetVersion');
+                if (appliedResetVersion !== STORAGE_RESET_VERSION) {
+                    resetUsageWorkspaceState();
+                    return;
+                }
+
+                tools = JSON.parse(localStorage.getItem('tools')) || getInitialToolsState();
+                removedItems = JSON.parse(localStorage.getItem('removedItems')) || {};
+                usageData = JSON.parse(localStorage.getItem('usageData')) || [];
+            } catch (e) {
+                console.error("Error loading state from localStorage:", e);
+                tools = getInitialToolsState();
+                removedItems = {};
+                usageData = [];
+            }
+            ensureUsageTimestamps();
+        }
+
+        function saveState() {
+            localStorage.setItem('tools', JSON.stringify(tools));
+            localStorage.setItem('removedItems', JSON.stringify(removedItems));
+
+            const usageDataLimits = [100, 50, 25, 10, 0];
+            let savedUsageData = false;
+
+            for (const limit of usageDataLimits) {
+                try {
+                    const usageSnapshot = limit > 0 ? usageData.slice(0, limit) : [];
+                    localStorage.setItem('usageData', JSON.stringify(usageSnapshot));
+                    savedUsageData = true;
+                    break;
+                } catch (error) {
+                    if (!(error instanceof DOMException) || error.name !== 'QuotaExceededError') {
+                        throw error;
+                    }
+                }
+            }
+
+            if (!savedUsageData) {
+                console.warn('usageData could not be persisted because localStorage quota is full.');
+            }
+        }
+
+        function setSheetStatus(message, tone = 'neutral') {
+            if (!sheetStatus) {
+                return;
+            }
+
+            const toneClassMap = {
+                neutral: 'bg-slate-100 text-slate-600',
+                loading: 'bg-sky-100 text-sky-700',
+                success: 'bg-emerald-100 text-emerald-700',
+                warning: 'bg-amber-100 text-amber-700',
+                error: 'bg-rose-100 text-rose-700'
+            };
+
+            sheetStatus.className = `mt-2 inline-flex rounded-full px-3 py-1 text-sm ${toneClassMap[tone] || toneClassMap.neutral}`;
+            sheetStatus.textContent = message;
+        }
+
+        function normalizeSheetValue(value) {
+            return String(value == null ? '' : value).trim();
+        }
+
+        function normalizeToolAction(value) {
+            const normalizedValue = normalizeSheetValue(value);
+            if (!normalizedValue) {
+                return '';
+            }
+
+            if (/^томилолт(онд\s+явуулсан)?$/i.test(normalizedValue)) {
+                return 'Томилолт';
+            }
+
+            return normalizedValue;
+        }
+
+        function buildUsageSummary(newEntry) {
+            return [
+                normalizeSheetValue(newEntry.name),
+                normalizeSheetValue(newEntry.number),
+                normalizeToolAction(newEntry.action),
+                normalizeSheetValue(newEntry.comment),
+                normalizeSheetValue(newEntry.registrant)
+            ].filter(Boolean).join('-');
+        }
+
+        function buildSheetPayload(newEntry) {
+            const toolName = normalizeSheetValue(newEntry.name);
+            const toolNumber = normalizeSheetValue(newEntry.number);
+            const toolAction = normalizeToolAction(newEntry.action);
+            const comment = normalizeSheetValue(newEntry.comment);
+            const registrant = normalizeSheetValue(newEntry.registrant);
+            const eventDate = normalizeSheetValue(newEntry.date);
+
+            return {
+                payload: {
+                    name: toolName,
+                    number: toolNumber,
+                    action: toolAction,
+                    comment,
+                    registrant
+                },
+                submittedAt: new Date().toISOString(),
+                eventDate,
+                eventId: String(newEntry.id)
+            };
+        }
+
+        function buildSheetRequestBody(payload) {
+            return JSON.stringify(payload);
+        }
+
+        async function sendUsageToSheet(newEntry) {
+            const payload = buildSheetPayload(newEntry);
+            const requestBody = buildSheetRequestBody(payload);
+            const scriptUrls = getSheetScriptUrls();
+
+            setSheetStatus('Google Sheets рүү илгээж байна...', 'loading');
+
+            for (const url of scriptUrls) {
+                try {
+                    await fetch(url, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        cache: 'no-cache',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=UTF-8'
+                        },
+                        body: requestBody,
+                        keepalive: true
+                    });
+
+                    setSheetStatus(`Google Sheets рүү илгээлээ: ${new Date().toLocaleTimeString('mn-MN')}`, 'success');
+                    return true;
+                } catch (error) {
+                    console.error(`Sheets рүү ${url} сувгаар шууд илгээхэд алдаа гарлаа:`, error);
+
+                    if (navigator.sendBeacon) {
+                        try {
+                            const queued = navigator.sendBeacon(
+                                url,
+                                new Blob([requestBody], { type: 'text/plain;charset=UTF-8' })
+                            );
+
+                            if (queued) {
+                                setSheetStatus('Google Sheets рүү sendBeacon сувгаар дамжууллаа', 'success');
+                                return true;
+                            }
+                        } catch (beaconError) {
+                            console.error('Sheets beacon error:', beaconError);
+                        }
+                    }
+                }
+            }
+
+            setSheetStatus('Google Sheets рүү илгээж чадсангүй. Хоёр deploy URL-ээ шалгана уу.', 'error');
+            return false;
+        }
+
+        function getUsageStatusHtml(entry) {
+            return entry.deleted
+                ? '<span class="text-red-600 font-medium">Устгагдсан</span>'
+                : '<span class="text-emerald-600 font-medium">Идэвхтэй</span>';
+        }
+
+        function buildUsageRowMarkup(entry, index, options = {}) {
+            const { cellPaddingClass = 'p-3', showDeleteButton = false } = options;
+            const rowClass = entry.deleted ? 'opacity-60 line-through text-red-600' : 'hover:bg-gray-50';
+            const actionText = normalizeToolAction(entry.action);
+            const trailingCell = showDeleteButton
+                ? `
+                    <td class="border border-gray-300 ${cellPaddingClass} text-center">
+                        <button type="button" class="usage-delete-button" data-delete-usage-id="${entry.id}" aria-label="Мөр устгах" ${entry.deleted ? 'disabled' : ''}>
+                            <i data-lucide="trash-2" class="icon" data-size="18"></i>
+                        </button>
+                    </td>
+                `
+                : `<td class="border border-gray-300 ${cellPaddingClass} text-center">${getUsageStatusHtml(entry)}</td>`;
+
+            return `
+                <tr class="${rowClass}">
+                    <td class="border border-gray-300 ${cellPaddingClass} text-center">${index + 1}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass}">${entry.name}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass} text-center">${entry.number}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass}">${actionText}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass}">${entry.comment || '-'}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass} text-sm text-gray-600">${entry.date}</td>
+                    <td class="border border-gray-300 ${cellPaddingClass}">${entry.registrant || '-'}</td>
+                    ${trailingCell}
+                </tr>
+            `;
+        }
+
+        function buildUsageHistoryRowMarkup(entry, index) {
+            const rowClass = entry.deleted ? 'opacity-60 line-through text-red-600' : '';
+            const actionText = normalizeToolAction(entry.action);
+            return `
+                <tr class="${rowClass}">
+                    <td class="border border-gray-300 p-2 text-center">${index + 1}</td>
+                    <td class="border border-gray-300 p-2">${entry.name}</td>
+                    <td class="border border-gray-300 p-2 text-center">${entry.number}</td>
+                    <td class="border border-gray-300 p-2">${actionText}</td>
+                    <td class="border border-gray-300 p-2">${entry.comment || '-'}</td>
+                    <td class="border border-gray-300 p-2 text-sm text-gray-600">${entry.date}</td>
+                    <td class="border border-gray-300 p-2">${entry.registrant || '-'}</td>
+                </tr>
+            `;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function setSelectedRegistrant(name) {
+            selectedRegistrantName = name.trim();
+            selectedRegistrantBadge.textContent = selectedRegistrantName || 'QR уншаагүй';
+            selectedRegistrantBadge.className = selectedRegistrantName
+                ? 'rounded-full bg-emerald-50 px-3 py-1 text-emerald-700'
+                : 'rounded-full bg-sky-50 px-3 py-1 text-sky-700';
+            manualRegistrantInput.value = selectedRegistrantName;
+        }
+
+        function extractQrName(decodedText) {
+            try {
+                const qrData = JSON.parse(decodedText);
+                return String(qrData.name || qrData.fullName || qrData.employeeName || qrData.employee || '').trim();
+            } catch (error) {
+                return String(decodedText || '').trim();
+            }
+        }
+
+        function clearQrStatusResetTimer() {
+            if (qrStatusResetTimer) {
+                clearTimeout(qrStatusResetTimer);
+                qrStatusResetTimer = null;
+            }
+        }
+
+        function setQrStatusMarkup(markup) {
+            scanStatus.innerHTML = markup;
+        }
+
+        function scheduleQrPromptReset() {
+            clearQrStatusResetTimer();
+            qrStatusResetTimer = setTimeout(() => {
+                if (qrModal.classList.contains('show')) {
+                    scanStatus.textContent = 'QR кодоо камерт харуулна уу.';
+                }
+                qrStatusResetTimer = null;
+            }, 500);
+        }
+
+        function getQrScannerConfig() {
+            const config = {
+                fps: 12,
+                qrbox: { width: 260, height: 260 },
+                aspectRatio: 1.0,
+                disableFlip: false,
+                rememberLastUsedCamera: true
+            };
+
+            if (window.Html5QrcodeSupportedFormats?.QR_CODE) {
+                config.formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
+            }
+
+            return config;
+        }
+
+        function getRelaxedQrScannerConfig() {
+            const config = {
+                fps: 10,
+                qrbox: { width: 300, height: 300 },
+                aspectRatio: 1.0,
+                disableFlip: false,
+                rememberLastUsedCamera: true
+            };
+
+            if (window.Html5QrcodeSupportedFormats?.QR_CODE) {
+                config.formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
+            }
+
+            return config;
+        }
+
+        async function getRearCameraCandidates() {
+            if (typeof Html5Qrcode?.getCameras !== 'function') {
+                return [];
+            }
+
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+                if (!Array.isArray(cameras) || cameras.length === 0) {
+                    return [];
+                }
+
+                return cameras
+                    .filter((camera) => /back|rear|environment|ар/i.test(String(camera.label || '')))
+                    .map((camera) => camera.id)
+                    .filter(Boolean);
+            } catch (error) {
+                console.warn('Camera list unavailable:', error);
+                return [];
+            }
+        }
+
+        function buildQrScanAttempts(rearCameraIds) {
+            const attemptMap = new Map();
+            const registerAttempt = (key, cameraConfig, scannerConfig) => {
+                if (!attemptMap.has(key)) {
+                    attemptMap.set(key, { cameraConfig, scannerConfig });
+                }
+            };
+
+            rearCameraIds.forEach((cameraId, index) => {
+                registerAttempt(`rear-id-fast-${index}`, cameraId, getQrScannerConfig());
+                registerAttempt(`rear-id-safe-${index}`, cameraId, getRelaxedQrScannerConfig());
+            });
+
+            registerAttempt('rear-exact-fast', { facingMode: { exact: 'environment' } }, getQrScannerConfig());
+            registerAttempt('rear-ideal-fast', { facingMode: { ideal: 'environment' } }, getQrScannerConfig());
+            registerAttempt('rear-ideal-safe', { facingMode: { ideal: 'environment' } }, getRelaxedQrScannerConfig());
+
+            return Array.from(attemptMap.values());
+        }
+
+        async function startQrScannerWithFallbacks(scanner) {
+            const rearCameraIds = await getRearCameraCandidates();
+            const scanAttempts = buildQrScanAttempts(rearCameraIds);
+            let lastError = null;
+
+            for (const attempt of scanAttempts) {
+                try {
+                    await scanner.start(
+                        attempt.cameraConfig,
+                        attempt.scannerConfig,
+                        handleQrScanSuccess,
+                        handleQrScanError
+                    );
+                    return true;
+                } catch (error) {
+                    lastError = error;
+                    console.warn('QR scanner attempt failed:', attempt.cameraConfig, error);
+                }
+            }
+
+            if (lastError) {
+                throw lastError;
+            }
+
+            throw new Error('No camera configuration available');
+        }
+
+        function applyManualRegistrantSelection() {
+            const manualName = manualRegistrantInput.value.trim();
+            if (!manualName) {
+                manualRegistrantInput.focus();
+                return;
+            }
+
+            setSelectedRegistrant(manualName);
+            setQrStatusMarkup(`<span class="text-emerald-600">Гараар сонгосон бүртгэл: <strong>${escapeHtml(manualName)}</strong></span>`);
+            scheduleQrPromptReset();
+        }
+
+        async function stopQrScanner() {
+            if (qrScannerStopPromise) {
+                return qrScannerStopPromise;
+            }
+
+            if (!html5QrCode) {
+                qrScannerStarting = false;
+                return;
+            }
+
+            const scanner = html5QrCode;
+            html5QrCode = null;
+            qrScannerStarting = false;
+
+            qrScannerStopPromise = (async () => {
+                try {
+                    if (scanner.isScanning) {
+                        await scanner.stop();
+                    }
+                    await scanner.clear();
+                } catch (error) {
+                    console.warn('QR scanner stop error:', error);
+                } finally {
+                    qrScannerStopPromise = null;
+                }
+            })();
+
+            return qrScannerStopPromise;
+        }
+
+        async function closeQrModal() {
+            clearQrStatusResetTimer();
+            await stopQrScanner();
+            qrModal.classList.remove('show');
+            qrScanInProgress = false;
+            scanStatus.textContent = '';
+        }
+
+        async function handleQrScanSuccess(decodedText) {
+            if (qrScanInProgress) {
+                return;
+            }
+
+            const normalizedDecodedText = String(decodedText || '').trim();
+            const now = Date.now();
+            if (normalizedDecodedText && normalizedDecodedText === qrLastDecodedText && (now - qrLastDecodedAt) < 2000) {
+                return;
+            }
+
+            const scannedName = extractQrName(decodedText);
+            if (!scannedName) {
+                setQrStatusMarkup('<span class="text-red-600">QR кодын мэдээллээс нэр олдсонгүй.</span>');
+                scheduleQrPromptReset();
+                return;
+            }
+
+            qrScanInProgress = true;
+            qrLastDecodedText = normalizedDecodedText;
+            qrLastDecodedAt = now;
+            setSelectedRegistrant(scannedName);
+            const autoRegistered = !addUsageButton.disabled && await registerUsageEntry({ clearRegistrant: false, showSheetAlert: true });
+            setQrStatusMarkup(
+                autoRegistered
+                    ? `<span class="text-emerald-600">QR амжилттай уншигдлаа, бүртгэл хадгалагдлаа: <strong>${escapeHtml(scannedName)}</strong></span>`
+                    : `<span class="text-emerald-600">QR амжилттай уншигдлаа: <strong>${escapeHtml(scannedName)}</strong></span>`
+            );
+            scheduleQrPromptReset();
+
+            setTimeout(() => {
+                qrScanInProgress = false;
+            }, 120);
+        }
+
+        function handleQrScanError() {
+        }
+
+        async function openQrModal() {
+            if (qrScannerStarting || qrScanInProgress) {
+                return;
+            }
+
+            if (qrScannerStopPromise) {
+                await qrScannerStopPromise;
+            }
+
+            qrModal.classList.add('show');
+            scanStatus.textContent = 'Камер асаж байна...';
+            qrScannerStarting = true;
+            html5QrCode = new Html5Qrcode('qrReader');
+
+            try {
+                await startQrScannerWithFallbacks(html5QrCode);
+                scanStatus.textContent = 'QR кодоо камерт харуулна уу.';
+            } catch (error) {
+                console.error('Rear camera start error:', error);
+                scanStatus.innerHTML = '<span class="text-red-600">Арын камераар QR уншиж чадсангүй. Нэрийг доорх талбарт гараар оруулаад нэг бүрчлэн бүртгэнэ үү.</span>';
+                await stopQrScanner();
+                manualRegistrantInput.focus();
+            } finally {
+                qrScannerStarting = false;
+            }
+        }
+
+        // ===================================
+        // 2. Тооцоолол болон UI Шинэчлэх
+        // ===================================
+
+        function calculateTotal() {
+            return tools.reduce((total, tool) => {
+                return total + tool.numbers.filter((_, idx) => !removedItems[`${tool.id}-${idx}`]).length;
+            }, 0);
+        }
+
+        function updateStats() {
+            const total = calculateTotal();
+            // Ашиглалтын бүртгэлээс зөвхөн идэвхтэй (устгагдаагүй) мөрийг тоолно
+            const usage = usageData.filter(item => !item.deleted).length;
+            const remaining = total - usage;
+
+            document.getElementById('totalTools').textContent = total;
+            document.getElementById('usageTotal').textContent = usage;
+            document.getElementById('remainingTotal').textContent = remaining;
+
+            // Ашиглалтын хүснэгтийн нийлбэрийг шинэчлэх
+            document.getElementById('usageTableFooter').innerHTML = `
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="7" class="border border-gray-300 p-3 text-right">
+                        НИЙТ ашиглалтад:
+                    </td>
+                    <td class="border border-gray-300 p-3 text-center bg-orange-100">
+                        ${usage}
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Багажны жагсаалтыг зурах
+        function renderToolsTable() {
+            const tbody = document.getElementById('toolsTableBody');
+            const thead = document.getElementById('toolsTableHeader');
+            tbody.innerHTML = '';
+            const activeUsageKeys = getActiveUsageKeySet();
+            const maxColumns = Math.max(10, ...tools.map(tool => {
+                const visibleCount = tool.numbers.filter((_, idx) => !removedItems[`${tool.id}-${idx}`]).length;
+                return visibleCount + (editMode ? 1 : 0);
+            }));
+
+            // Толгой хэсэг (Header)
+            thead.innerHTML = `
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-300 p-3 text-center">Д/д</th>
+                    <th class="border border-gray-300 p-3 text-center">Багажны нэр</th>
+                    <th class="border border-gray-300 p-3 text-center" colspan="${maxColumns}">
+                        Багажны дугаар ${editMode ? '(Нэг дарж засах/нэмэх, x дарж устгах)' : ''}
+                    </th>
+                    <th class="border border-gray-300 p-3 text-center bg-blue-50">Тоо</th>
+                </tr>
+            `;
+
+            // Мөрүүдийг зурах (Rows)
+            tools.forEach((tool, rowIdx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+
+                const count = getAvailableCountByTool(tool, activeUsageKeys);
+                const visibleNumbers = tool.numbers
+                    .map((number, idx) => ({ number, idx }))
+                    .filter(item => !removedItems[`${tool.id}-${item.idx}`]);
+
+                let rowHTML = `
+                    <td class="border border-gray-300 p-3 text-center">${tool.id}</td>
+                    <td class="border border-gray-300 p-3 font-medium">${tool.name}</td>
+                `;
+
+                // Дугаарын нүднүүд (Number Cells)
+                for (let idx = 0; idx < maxColumns; idx++) {
+                    const visibleEntry = visibleNumbers[idx];
+                    const number = visibleEntry?.number;
+                    const actualIdx = visibleEntry ? visibleEntry.idx : tool.numbers.length + (idx - visibleNumbers.length);
+                    const key = `${tool.id}-${actualIdx}`;
+                    const isRemoved = false;
+                    const usageKey = `${tool.name}||${number}`;
+                    const isInUse = number && activeUsageKeys.has(usageKey) && !isRemoved;
+                    const classes = ['border', 'border-gray-300', 'p-3', 'text-center', 'number-cell'];
+                    const isEditing = editingCellKey === key;
+                    const canEdit = editMode && (!number || !isRemoved);
+                    if (canEdit) {
+                        classes.push('cursor-pointer', 'number-cell--editable');
+                    }
+                    if (!number) {
+                        classes.push('number-cell--empty');
+                    }
+                    if (isRemoved) {
+                        classes.push('number-cell--removed');
+                    }
+                    if (isInUse) {
+                        classes.push('number-cell--in-use');
+                    }
+                    if (isEditing) {
+                        classes.push('number-cell--editing');
+                    }
+                    rowHTML += `
+                        <td 
+                            class="${classes.join(' ')}"
+                            data-tool-id="${tool.id}"
+                            data-number-idx="${actualIdx}"
+                            ${canEdit ? `onclick="startNumberEdit(${tool.id}, ${actualIdx})"` : ''}
+                        >
+                            ${isEditing ? `<input type="text" class="number-input" value="${number || ''}" maxlength="20" data-edit-input="${key}" />` : `
+                                <div class="number-cell__content">
+                                    <span>${number || (editMode ? '+' : '')}</span>
+                                    ${editMode && number && !isRemoved ? `<button type="button" class="number-cell__delete" onclick="deleteNumber(${tool.id}, ${actualIdx}, event)">x</button>` : ''}
+                                </div>
+                            `}
+                        </td>
+                    `;
+                }
+
+                // Тоо (Count)
+                rowHTML += `
+                    <td class="border border-gray-300 p-3 text-center font-bold bg-blue-50">
+                        ${count}
+                    </td>
+                `;
+
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+            
+            // Нийлбэр мөр (Footer)
+                        const availableTotal = tools.reduce((total, tool) => total + getAvailableCountByTool(tool, activeUsageKeys), 0);
+            document.getElementById('toolsTableFooter').innerHTML = `
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="${maxColumns + 2}" class="border border-gray-300 p-3 text-right">
+                        НИЙЛБЭР:
+                    </td>
+                    <td class="border border-gray-300 p-3 text-center bg-blue-100">
+                                    ${availableTotal}
+                    </td>
+                </tr>
+            `;
+
+            // Lucide icons-ийг шинэчлэх
+            lucide.createIcons();
+            attachEditableCellInteractions();
+        }
+
+        function attachEditableCellInteractions() {
+            const cells = document.querySelectorAll('#toolsTableBody .number-cell--editable');
+            cells.forEach(cell => {
+                const removeHighlight = () => cell.classList.remove('number-cell--active');
+                cell.addEventListener('pointerdown', () => {
+                    if (cell.classList.contains('number-cell--editing')) {
+                        return;
+                    }
+                    if (!cell.classList.contains('number-cell--in-use')) {
+                        cell.classList.add('number-cell--active');
+                    }
+                });
+                cell.addEventListener('pointerup', removeHighlight);
+                cell.addEventListener('pointerleave', removeHighlight);
+            });
+
+            if (!editingCellKey) {
+                return;
+            }
+
+            const input = document.querySelector(`[data-edit-input="${editingCellKey}"]`);
+            if (!input) {
+                return;
+            }
+
+            input.focus();
+            input.select();
+            input.addEventListener('click', event => event.stopPropagation());
+            input.addEventListener('dblclick', event => event.stopPropagation());
+            input.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    commitNumberEdit();
+                }
+                if (event.key === 'Escape') {
+                    cancelNumberEdit();
+                }
+            });
+            input.addEventListener('blur', () => {
+                if (editingCellKey) {
+                    commitNumberEdit();
+                }
+            });
+        }
+
+        window.startNumberEdit = (toolId, numIdx) => {
+            if (!editMode) return;
+
+            const tool = getToolById(toolId);
+            const currentNumber = tool?.numbers[numIdx];
+            const key = `${toolId}-${numIdx}`;
+            if (!tool || removedItems[key]) {
+                return;
+            }
+
+            if (editingCellKey && editingCellKey !== key) {
+                commitNumberEdit();
+            }
+
+            editingCellKey = key;
+            renderToolsTable();
+        };
+
+        function cancelNumberEdit() {
+            if (!editingCellKey) {
+                return;
+            }
+            editingCellKey = null;
+            renderToolsTable();
+        }
+
+        function commitNumberEdit() {
+            if (!editingCellKey) {
+                return;
+            }
+
+            const [toolIdText, numIdxText] = editingCellKey.split('-');
+            const toolId = Number(toolIdText);
+            const numIdx = Number(numIdxText);
+            const input = document.querySelector(`[data-edit-input="${editingCellKey}"]`);
+            const nextNumber = input ? input.value.trim() : '';
+            const tool = getToolById(toolId);
+            const oldNumber = tool?.numbers[numIdx] || '';
+
+            editingCellKey = null;
+
+            if (!tool) {
+                renderToolsTable();
+                return;
+            }
+
+            if (!nextNumber) {
+                if (oldNumber) {
+                    tool.numbers.splice(numIdx, 1);
+                    removeEditedNumberReferences(tool, oldNumber);
+                    saveState();
+                    updateUI();
+                    return;
+                }
+                renderToolsTable();
+                return;
+            }
+
+            if (nextNumber === oldNumber) {
+                renderToolsTable();
+                return;
+            }
+
+            if (isDuplicateNumber(tool, nextNumber, numIdx)) {
+                alert('Ижил багаж дээр давхардсан дугаар оруулах боломжгүй.');
+                renderToolsTable();
+                return;
+            }
+
+            if (oldNumber) {
+                tool.numbers[numIdx] = nextNumber;
+                syncEditedNumberReferences(tool, oldNumber, nextNumber);
+            } else {
+                tool.numbers.splice(numIdx, 0, nextNumber);
+            }
+            saveState();
+            updateUI();
+        }
+
+        window.deleteNumber = (toolId, numIdx, event) => {
+            event.stopPropagation();
+            if (!editMode) return;
+
+            const tool = getToolById(toolId);
+            const numberToRemove = tool?.numbers[numIdx];
+            if (!tool || !numberToRemove) {
+                return;
+            }
+
+            tool.numbers.splice(numIdx, 1);
+            removeEditedNumberReferences(tool, numberToRemove);
+            saveState();
+            updateUI();
+        };
+
+        // Ашиглалтын бүртгэлийг зурах
+        function renderUsageTable() {
+            const tbody = document.getElementById('usageTableBody');
+            tbody.innerHTML = '';
+            const visibleData = usageData.filter(item => !item.deleted);
+            if (visibleData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="border border-gray-300 p-8 text-center text-gray-500">
+                            Ашиглалтын мэдээлэл байхгүй байна
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            visibleData.forEach((item, idx) => {
+                tbody.insertAdjacentHTML('beforeend', buildUsageRowMarkup(item, idx, { showDeleteButton: true }));
+            });
+            lucide.createIcons();
+        }
+
+        // Багажийн нэрийг select-д оруулах
+        function populateToolNames() {
+            toolNameSelect.innerHTML = '<option value="">Багажийн нэр</option>';
+            tools.forEach(tool => {
+                const option = document.createElement('option');
+                option.value = tool.name;
+                option.textContent = tool.name;
+                toolNameSelect.appendChild(option);
+            });
+        }
+
+        function renderToolMenu() {
+            if (!toolMenuPanel || !toolNameList) {
+                return;
+            }
+
+            if (toolMenuPanel.classList.contains('hidden')) {
+                toolNameList.innerHTML = '';
+                return;
+            }
+
+            toolNameList.innerHTML = '';
+
+            if (!tools.length) {
+                toolNameList.innerHTML = '<span class="text-sm text-gray-500">Одоогоор багаж байхгүй байна</span>';
+                return;
+            }
+
+            tools.forEach(tool => {
+                const chip = document.createElement('span');
+                chip.className = 'tool-name-chip';
+                chip.innerHTML = `
+                    <span>${tool.name}</span>
+                    <button type="button" class="tool-name-chip__remove" data-remove-tool-name="${tool.id}" aria-label="${tool.name} устгах">&times;</button>
+                `;
+                toolNameList.appendChild(chip);
+            });
+        }
+
+        function openToolMenu() {
+            if (toolMenuPanel.classList.contains('hidden')) {
+                toolMenuPanel.classList.remove('hidden');
+                renderToolMenu();
+                newToolNameInput.focus();
+            } else {
+                toolMenuPanel.classList.add('hidden');
+            }
+        }
+
+        function addToolName() {
+            const toolName = normalizeToolName(newToolNameInput.value);
+            if (!toolName) {
+                alert('Багажны нэр оруулна уу.');
+                newToolNameInput.focus();
+                return;
+            }
+
+            if (hasToolName(toolName)) {
+                alert('Ижил нэртэй багаж аль хэдийн байна.');
+                newToolNameInput.focus();
+                return;
+            }
+
+            tools.push({
+                id: getNextToolId(),
+                name: toolName,
+                numbers: []
+            });
+
+            newToolNameInput.value = '';
+            saveState();
+            updateUI();
+            toolNameSelect.value = toolName;
+            populateToolNumbers();
+            renderToolMenu();
+        }
+
+        function removeToolName(toolId) {
+            const tool = getToolById(toolId);
+            if (!tool) {
+                return;
+            }
+
+            const confirmed = confirm(`"${tool.name}" багажны нэрийг устгах уу? Холбогдсон ашиглалтын бүртгэлүүд устгагдсан гэж тэмдэглэгдэнэ.`);
+            if (!confirmed) {
+                return;
+            }
+
+            tools = tools.filter(item => item.id !== toolId);
+            Object.keys(removedItems).forEach(key => {
+                if (key.startsWith(`${toolId}-`)) {
+                    delete removedItems[key];
+                }
+            });
+            usageData = usageData.map(entry => entry.name === tool.name && !entry.deleted ? { ...entry, deleted: true } : entry);
+
+            if (toolNameSelect.value === tool.name) {
+                toolNameSelect.value = '';
+                toolNumberSelect.value = '';
+            }
+
+            if (editingCellKey && editingCellKey.startsWith(`${toolId}-`)) {
+                editingCellKey = null;
+            }
+
+            saveState();
+            updateUI();
+            renderToolMenu();
+        }
+
+        // Сонгогдсон нэр дээр үндэслэн дугаарыг select-д оруулах
+        function populateToolNumbers() {
+            const selectedName = toolNameSelect.value;
+            toolNumberSelect.disabled = !selectedName;
+            toolNumberOptions.innerHTML = '';
+            updateUsageFormState();
+
+            if (selectedName) {
+                const selectedTool = tools.find(t => t.name === selectedName);
+                if (selectedTool) {
+                    const activeUsageKeys = getActiveUsageKeySet();
+                    selectedTool.numbers.forEach((num, idx) => {
+                        const key = `${selectedTool.id}-${idx}`;
+                        const usageKey = `${selectedTool.name}||${num}`;
+                        if (removedItems[key] || activeUsageKeys.has(usageKey)) {
+                            return;
+                        }
+                        const option = document.createElement('option');
+                        option.value = num;
+                        toolNumberOptions.appendChild(option);
+                    });
+                }
+            }
+
+            updateUsageFormState();
+        }
+
+        function updateUsageFormState() {
+            const hasToolName = Boolean(toolNameSelect.value);
+            const hasToolNumber = Boolean(toolNumberSelect.value.trim());
+            const hasToolAction = Boolean(toolActionSelect.value);
+
+            addUsageButton.disabled = !(hasToolName && hasToolNumber && hasToolAction);
+        }
+        
+        // UI-г бүрэн шинэчлэх
+        function updateUI() {
+            usageData.forEach(entry => {
+                entry.action = normalizeToolAction(entry.action);
+            });
+            renderToolsTable();
+            renderUsageTable();
+            renderUsageHistory();
+            updateStats();
+            populateToolNames();
+            populateToolNumbers(); // Энэ нь disable-ийг хянана
+            renderToolMenu();
+        }
+
+        function renderUsageHistory() {
+            const historyDiv = document.getElementById('usageHistory');
+            if (!usageData.length) {
+                historyDiv.innerHTML = '<div class="text-gray-500 text-center p-6">Түүх байхгүй байна</div>';
+                return;
+            }
+
+            const sortedEntries = [...usageData].sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a));
+            const grouped = {};
+            const orderedDates = [];
+
+            sortedEntries.forEach(entry => {
+                const dateKey = entry.date ? entry.date.split(' ')[0] : 'Огноо тодорхойгүй';
+                if (!grouped[dateKey]) {
+                    grouped[dateKey] = [];
+                    orderedDates.push(dateKey);
+                }
+                grouped[dateKey].push(entry);
+            });
+
+            let html = '';
+            orderedDates.forEach(date => {
+                html += `
+                    <div class="mb-4">
+                        <div class="font-bold text-blue-700 mb-2">${date}</div>
+                        <table class="w-full border-collapse mb-2 text-sm">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 p-2">№</th>
+                                    <th class="border border-gray-300 p-2">Нэр</th>
+                                    <th class="border border-gray-300 p-2">Дугаар</th>
+                                    <th class="border border-gray-300 p-2">Зорилго</th>
+                                    <th class="border border-gray-300 p-2">Тайлбар</th>
+                                    <th class="border border-gray-300 p-2">Огноо</th>
+                                    <th class="border border-gray-300 p-2">Бүртгэл</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                grouped[date].forEach((entry, idx) => {
+                    html += buildUsageHistoryRowMarkup(entry, idx);
+                });
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            historyDiv.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // ===================================
+        // 3. Үйл явдлыг зохицуулах функцууд
+        // ===================================
+
+        // Багажны дугаар засах эсвэл мөрийн устгалын хуучин төлөвийг сэргээх
+        window.handleDoubleClick = (toolId, numIdx) => {
+            if (!editMode) return;
+
+            const key = `${toolId}-${numIdx}`;
+            if (editingCellKey === key) {
+                cancelNumberEdit();
+                return;
+            }
+            
+            setRemovedItemState(toolId, numIdx, !removedItems[key]);
+            saveState();
+            updateUI();
+        };
+
+        async function registerUsageEntry(options = {}) {
+            const { clearRegistrant = true, showSheetAlert = true } = options;
+            const name = toolNameSelect.value;
+            const number = toolNumberSelect.value.trim();
+            const action = toolActionSelect.value;
+            const comment = toolCommentInput.value;
+
+            if (!name || !number) {
+                return false;
+            }
+
+            if (!action) {
+                alert('Зорилго сонгоно уу.');
+                toolActionSelect.focus();
+                return false;
+            }
+
+            if (name && number) {
+
+                const activeUsageKeys = getActiveUsageKeySet();
+                const selectedTool = tools.find(tool => tool.name === name);
+                const numberIdx = selectedTool ? selectedTool.numbers.indexOf(number) : -1;
+                let isRemoved = false;
+                let isInUse = false;
+                if (selectedTool && numberIdx >= 0) {
+                    isRemoved = !!removedItems[`${selectedTool.id}-${numberIdx}`];
+                    isInUse = activeUsageKeys.has(`${name}||${number}`);
+                }
+
+                if (!selectedTool || isRemoved || isInUse) {
+                    alert('Сонгосон дугаар ашиглах боломжгүй байна. Өөр дугаар сонгоно уу.');
+                    populateToolNumbers();
+                    return false;
+                }
+
+                if (numberIdx === -1) {
+                    selectedTool.numbers.push(number);
+                }
+
+                const entryId = Date.now();
+                const newEntry = {
+                    id: entryId,
+                    name,
+                    number,
+                    action,
+                    comment,
+                    registrant: selectedRegistrantName,
+                    timestamp: entryId,
+                    date: new Date().toLocaleString('mn-MN')
+                };
+                usageData.unshift(newEntry); // Хамгийн эхэнд нэмэх
+                saveState();
+
+                // Формыг цэвэрлэх
+                toolNameSelect.value = '';
+                toolNumberSelect.value = '';
+                toolActionSelect.value = '';
+                toolCommentInput.value = '';
+                if (clearRegistrant) {
+                    setSelectedRegistrant('');
+                }
+
+                updateUI();
+
+                const sent = await sendUsageToSheet(newEntry);
+
+                if (!sent && showSheetAlert) {
+                    alert('Google Sheets рүү мэдээлэл очсонгүй. Apps Script deploy болон spreadsheet эрхээ шалгана уу.');
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // Ашиглалтын мэдээлэл нэмэх
+        document.getElementById('addUsage').addEventListener('click', async () => {
+            await registerUsageEntry();
+        });
+
+        // Мөр устгах
+        window.deleteUsageRow = async (id) => {
+            const entry = usageData.find(item => item.id === id);
+            if (!entry || entry.deleted) {
+                return;
+            }
+
+            entry.deleted = true;
+
+            saveState();
+            updateUI();
+            await sendUsageToSheet({ ...entry, deleted: true, syncAction: 'usage_delete' });
+        };
+
+
+        // Засах горим солих
+        const editButton = document.getElementById('toggleEditMode');
+        const editIcon = document.querySelector('.edit-icon');
+        const editText = document.querySelector('.edit-text');
+
+        function updateEditButton() {
+            if (editMode) {
+                editIcon.setAttribute('data-lucide', 'save');
+                editText.textContent = 'Дуусгах';
+                editButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                editButton.classList.add('bg-orange-600', 'hover:bg-orange-700');
+            } else {
+                editIcon.setAttribute('data-lucide', 'edit-2');
+                editText.textContent = 'Засах';
+                editButton.classList.remove('bg-orange-600', 'hover:bg-orange-700');
+                editButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('usageTableBody').addEventListener('click', (event) => {
+            const deleteButton = event.target.closest('[data-delete-usage-id]');
+            if (!deleteButton) {
+                return;
+            }
+
+            const rawId = deleteButton.getAttribute('data-delete-usage-id');
+            if (!rawId) {
+                return;
+            }
+
+            const id = /^\d+$/.test(rawId) ? Number(rawId) : rawId;
+            deleteUsageRow(id);
+        });
+
+        editButton.addEventListener('click', () => {
+            if (editingCellKey) {
+                commitNumberEdit();
+            }
+            editMode = !editMode;
+            updateEditButton();
+            renderToolsTable(); // Засах горимоос хамаарч cell-ийн double click-ийг идэвхжүүлнэ
+        });
+
+        toggleToolMenuButton.addEventListener('click', () => {
+            openToolMenu();
+        });
+
+        addToolNameButton.addEventListener('click', addToolName);
+        newToolNameInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addToolName();
+            }
+            if (event.key === 'Escape') {
+                toolMenuPanel.classList.add('hidden');
+                renderToolMenu();
+            }
+        });
+
+        toolNameList.addEventListener('click', event => {
+            const removeButton = event.target.closest('[data-remove-tool-name]');
+            if (!removeButton) {
+                return;
+            }
+
+            const toolId = Number(removeButton.getAttribute('data-remove-tool-name'));
+            if (!Number.isFinite(toolId)) {
+                return;
+            }
+
+            removeToolName(toolId);
+        });
+
+        document.addEventListener('click', event => {
+            if (toolMenuPanel.classList.contains('hidden')) {
+                return;
+            }
+
+            if (toolMenuPanel.contains(event.target) || toggleToolMenuButton.contains(event.target)) {
+                return;
+            }
+
+            toolMenuPanel.classList.add('hidden');
+            renderToolMenu();
+        });
+
+
+        // Формд өөрчлөлт орохыг хянах
+        toolNameSelect.addEventListener('change', populateToolNumbers);
+        toolNumberSelect.addEventListener('input', () => {
+            updateUsageFormState();
+        });
+        toolActionSelect.addEventListener('change', updateUsageFormState);
+        scanQrButton.addEventListener('click', openQrModal);
+        clearRegistrantButton.addEventListener('click', () => setSelectedRegistrant(''));
+        applyManualRegistrantButton.addEventListener('click', applyManualRegistrantSelection);
+        manualRegistrantInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyManualRegistrantSelection();
+            }
+        });
+        document.getElementById('closeQrModal').addEventListener('click', closeQrModal);
+        qrModal.addEventListener('click', event => {
+            if (event.target === qrModal) {
+                closeQrModal();
+            }
+        });
+
+        // ===================================
+        // 4. Эхлүүлэх
+        // ===================================
+        
+        // Хуудас ачаалагдахад төлөвийг дуудаж, UI-г үүсгэх
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            updateUI();
+            updateEditButton();
+            updateUsageFormState();
+            setSelectedRegistrant('');
+            setSheetStatus('Google Sheets холболт бэлэн эсэхийг шалгаад илгээнэ', 'neutral');
+        });
+    </script>
+
+</body>
+</html>

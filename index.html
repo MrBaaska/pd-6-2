@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>УБТЗ - Замын 2-р анги</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>я
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+        :root{--primary:#003366;--accent:#f39c12;--bg:#f0f4f8;--card:#fff;--text:#1a2a3a;--muted:#6b7c93}
+        body{background:var(--bg);min-height:100vh;min-height:100dvh;color:var(--text)}
+
+        .app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;width:min(100%,480px);margin:0 auto}
+
+        /* Header */
+        .header{background:var(--primary);color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) 18px 20px;border-radius:0 0 22px 22px;flex-shrink:0;text-align:center}
+        .header-top{display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+        .header-top h1{font-size:1rem;font-weight:600;letter-spacing:0.3px}
+        .header sub{font-size:0.72rem;opacity:0.7;display:block}
+        .back-btn{display:none;align-items:center;gap:6px;cursor:pointer;font-size:0.8rem;opacity:0.85;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:5px 10px;border-radius:20px;margin-bottom:10px}
+        .back-btn i{font-size:14px}
+
+        /* Pages */
+        .page{display:none;flex:1;overflow-y:auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+        .page.active{display:block}
+
+        /* Grid */
+        .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:4px 0}
+        .menu-card{background:var(--card);border-radius:18px;padding:22px 12px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;border:1.5px solid rgba(0,51,102,0.18);transition:transform 0.18s,box-shadow 0.18s,background-color 0.18s,border-color 0.18s;position:relative;overflow:hidden}
+        .menu-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,51,102,0.04),transparent);pointer-events:none}
+        .menu-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,51,102,0.12);background:#0f4c81;border-color:#0f4c81}
+        .menu-card:active{transform:scale(0.97)}
+        .icon-wrap{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;transition:background-color 0.18s,transform 0.18s}
+        .icon-wrap i{font-size:24px;transition:color 0.18s}
+        .menu-card span{font-size:0.78rem;font-weight:600;color:var(--text);text-align:center;line-height:1.4;transition:color 0.18s;word-break:break-word}
+        .menu-card:hover span{color:#fff}
+        .menu-card:hover .icon-wrap{background:rgba(255,255,255,0.18);transform:scale(1.05)}
+        .menu-card:hover .icon-wrap i{color:#fff}
+        .badge{position:absolute;top:10px;right:10px;background:#e53e3e;color:#fff;font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:10px}
+
+        /* Colors for icons */
+        .ic-red{background:#fff0f0}.ic-red i{color:#c0392b}
+        .ic-blue{background:#eaf4ff}.ic-blue i{color:#1a6bb5}
+        .ic-orange{background:#fff7e6}.ic-orange i{color:#d68910}
+        .ic-purple{background:#f4eeff}.ic-purple i{color:#6c3fc5}
+        .ic-yellow{background:#fffbe6}.ic-yellow i{color:#b8860b}
+        .ic-indigo{background:#eef2ff}.ic-indigo i{color:#3949ab}
+        .ic-pink{background:#ffeef5}.ic-pink i{color:#b5195c}
+        .ic-gray{background:#f4f5f7}.ic-gray i{color:#5f6368}
+
+        /* Inner page */
+        .inner-header{margin-bottom:16px}
+        .inner-header h2{font-size:1rem;font-weight:700;color:var(--primary)}
+        .inner-header p{font-size:0.78rem;color:var(--muted);margin-top:2px}
+
+        .card{background:var(--card);border-radius:16px;padding:16px;border:1px solid rgba(0,0,0,0.05);margin-bottom:12px}
+        .card h3{font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+        .card h3 i{font-size:16px}
+
+        label{font-size:0.75rem;color:var(--muted);display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
+        input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid #e0e8f0;border-radius:10px;font-size:0.83rem;color:var(--text);background:#fff;margin-bottom:12px;outline:none;transition:border 0.15s}
+        input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+        textarea{resize:none;height:70px}
+
+        .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+        .btn-primary{background:var(--primary);color:#fff;border:none;padding:11px;width:100%;border-radius:12px;font-size:0.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background 0.15s}
+        .btn-primary:hover{background:#004488}
+        .btn-primary i{font-size:16px}
+
+        .notice{background:#eaf4ff;border-left:4px solid #1a6bb5;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#1a4a7a;margin-bottom:12px;line-height:1.5}
+        .weather-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+        .weather-item{background:#f8fbff;border-radius:12px;padding:12px;border:1px solid #d0e8ff;text-align:center}
+        .weather-item .val{font-size:1.3rem;font-weight:700;color:var(--primary)}
+        .weather-item .lbl{font-size:0.7rem;color:var(--muted);margin-top:2px}
+
+        .contact-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f4f8}
+        .contact-item:last-child{border:none}
+        .cicon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .cicon i{font-size:18px}
+        .cname{font-size:0.83rem;font-weight:600;color:var(--text)}
+        .cnum{font-size:0.76rem;color:var(--muted)}
+        .call-btn{margin-left:auto;background:#eaf4ff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:#1a6bb5;font-size:13px}
+
+        .alert-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f5f5f5}
+        .alert-item:last-child{border:none}
+        .alert-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+        .alert-text{font-size:0.8rem;color:var(--text);line-height:1.4}
+        .alert-time{font-size:0.7rem;color:var(--muted);margin-top:2px}
+
+        .tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:0.68rem;font-weight:700;margin-right:4px}
+        .tag-red{background:#ffe5e5;color:#c0392b}
+        .tag-green{background:#e5f9ee;color:#1a8a4a}
+        .tag-blue{background:#e5f0ff;color:#1a6bb5}
+        .tag-orange{background:#fff3e0;color:#d68910}
+
+        .train-row{background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px}
+        .train-route{font-size:0.88rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:6px}
+        .train-info{font-size:0.75rem;color:var(--muted);margin-top:4px}
+        .train-status{float:right;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:20px}
+
+        .save-msg{display:none;background:#eafaf1;border-radius:12px;padding:10px;text-align:center;font-size:0.82rem;color:#1a8a4a;margin-top:10px;font-weight:600}
+
+        .forecast-strip{display:flex;justify-content:space-between;font-size:0.75rem;text-align:center;padding-top:4px;gap:8px}
+        .forecast-day{flex:1;min-width:0}
+
+        .contact-item > div:not(.cicon){min-width:0;flex:1}
+
+        .train-route,
+        .train-info,
+        .cname,
+        .cnum,
+        .alert-text{overflow-wrap:anywhere}
+
+        @media (max-width: 520px) {
+            .header{padding:calc(14px + env(safe-area-inset-top,0px)) 14px 18px}
+            .page{padding:14px 12px calc(18px + env(safe-area-inset-bottom,0px))}
+            .field-row,
+            .weather-grid{grid-template-columns:1fr}
+            .contact-item{align-items:flex-start}
+            .call-btn{margin-left:0}
+            .forecast-strip{overflow-x:auto;justify-content:flex-start;padding-bottom:4px}
+            .forecast-day{min-width:72px}
+        }
+
+        @media (max-width: 380px) {
+            .app{width:100%}
+            .grid{grid-template-columns:1fr}
+            .menu-card{padding:18px 12px 16px}
+            .icon-wrap{width:48px;height:48px}
+            .icon-wrap i{font-size:22px}
+            .menu-card span{font-size:0.82rem}
+            .header-top h1{font-size:0.95rem}
+            .inner-header h2{font-size:0.95rem}
+            .card{padding:14px}
+            input,select,textarea{font-size:16px}
+        }
+    </style>
+</head>
+<body>
+
+<div class="app" id="app">
+    <div class="header" id="header">
+        <button class="back-btn" id="backBtn" onclick="goHome()"><i class="ti ti-arrow-left"></i> Буцах</button>
+        <div class="header-top" id="headerMain">
+            <h1>Замын 2-р анги</h1>
+        </div>
+        <sub id="headerSub">ПД, ПДБ удирдлагын систем</sub>
+    </div>
+
+    <!-- Home -->
+    <div class="page active" id="page-home">
+        <div class="grid">
+            <div class="menu-card" onclick="go('schedule')">
+                <div class="icon-wrap ic-blue"><i class="ti ti-train"></i></div>
+                <span>Галт тэрэгний график</span>
+            </div>
+            <div class="menu-card" onclick="go('risk')">
+                <div class="icon-wrap ic-orange"><i class="ti ti-alert-hexagon"></i></div>
+                <span>А-744 эрсдэлийн үнэлгээ</span>
+            </div>
+            <div class="menu-card" onclick="go('weather')">
+                <div class="icon-wrap ic-yellow"><i class="ti ti-sun-high"></i></div>
+                <span>Мэдээлэл дамжуулах</span>
+            </div>
+            <div class="menu-card" onclick="go('task')">
+                <div class="icon-wrap ic-indigo"><i class="ti ti-list-check"></i></div>
+                <span>ИТА үүрэг даалгавар</span>
+            </div>
+            <div class="menu-card" onclick="go('contacts')">
+                <div class="icon-wrap ic-gray"><i class="ti ti-address-book"></i></div>
+                <span>Холбоо барих</span>
+            </div>
+            <div class="menu-card" onclick="go('ai')">
+                <div class="icon-wrap ic-purple"><i class="ti ti-sparkles"></i></div>
+                <span>AI туслах</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defect -->
+    <div class="page" id="page-defect">
+        <div class="inner-header">
+            <h2>Зааварилгааны бүртгэл</h2>
+            <p>Шинэ гэмтэл бүртгэх</p>
+        </div>
+        <div class="card">
+            <h3><i class="ti ti-alert-triangle" style="color:#c0392b"></i> Гэмтлийн мэдээлэл</h3>
+            <div class="field-row">
+                <div><label>Огноо</label><input type="date" value="2025-05-06"></div>
+                <div><label>Цаг</label><input type="time" value="09:30"></div>
+            </div>
+            <label>Замын хэсэг (км)</label>
+            <input type="text" placeholder="Жишээ: 142+500">
+            <label>Гэмтлийн төрөл</label>
+            <select>
+                <option>Рельс гэмтэл</option>
+                <option>Балластын доголдол</option>
+                <option>Холбоосын гэмтэл</option>
+                <option>Шпал гэмтэл</option>
+            </select>
+            <label>Тэмдэглэл</label>
+            <textarea placeholder="Гэмтлийн дэлгэрэнгүй тайлбар..."></textarea>
+            <label>Яаралтай байдал</label>
+            <select>
+                <option>Ердийн</option>
+                <option>Анхаарал шаардлагатай</option>
+                <option>Яаралтай</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="showSaved('defect-save')"><i class="ti ti-device-floppy"></i> Хадгалах</button>
+        <div class="save-msg" id="defect-save">✓ Амжилттай хадгалагдлаа</div>
+        <div class="card" style="margin-top:16px">
+            <h3><i class="ti ti-list" style="color:#1a6bb5"></i> Сүүлийн бүртгэл</h3>
+            <div class="alert-item"><div class="alert-dot" style="background:#c0392b"></div><div><div class="alert-text">Рельс хагарал — 142+800 <span class="tag tag-red">Яаралтай</span></div><div class="alert-time">Өнөөдөр 07:20</div></div></div>
+            <div class="alert-item"><div class="alert-dot" style="background:#d68910"></div><div><div class="alert-text">Балласт доголдол — 138+200 <span class="tag tag-orange">Анхааруулга</span></div><div class="alert-time">Өчигдөр 15:45</div></div></div>
+            <div class="alert-item"><div class="alert-dot" style="background:#1a8a4a"></div><div><div class="alert-text">Шпал солих — 135+000 <span class="tag tag-green">Гүйцэтгэсэн</span></div><div class="alert-time">2 өдрийн өмнө</div></div></div>
+        </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="page" id="page-schedule">
+        <div class="inner-header"><h2>Галт тэрэгний график</h2><p>Өнөөдрийн хөдөлгөөн</p></div>
+        <div class="notice">📅 2025-05-06 — Нийт 12 галт тэрэг товлогдсон</div>
+        <div class="train-row"><div class="train-route"><i class="ti ti-train"></i> УБ → Зүүнхараа <span class="train-status" style="background:#e5f9ee;color:#1a8a4a">Хэвийн</span></div><div class="train-info">Явах: 06:30 · Ирэх: 09:15 · Вагон: 12</div></div>
+        <div class="train-row"><div class="train-route"><i class="ti ti-train"></i> Зүүнхараа → УБ <span class="train-status" style="background:#fff3e0;color:#d68910">Хоцролт</span></div><div class="train-info">Явах: 10:00 · Ирэх: 12:45 (+15 мин) · Вагон: 8</div></div>
+        <div class="train-row"><div class="train-route"><i class="ti ti-train"></i> УБ → Дархан <span class="train-status" style="background:#e5f9ee;color:#1a8a4a">Хэвийн</span></div><div class="train-info">Явах: 13:00 · Ирэх: 17:30 · Вагон: 16</div></div>
+        <div class="train-row"><div class="train-route"><i class="ti ti-train"></i> Дархан → УБ <span class="train-status" style="background:#ffe5e5;color:#c0392b">Зогссон</span></div><div class="train-info">Явах: 14:30 · Шалтгаан: Замын ажил</div></div>
+        <div class="train-row"><div class="train-route"><i class="ti ti-train"></i> УБ → Сүхбаатар <span class="train-status" style="background:#e5f9ee;color:#1a8a4a">Хэвийн</span></div><div class="train-info">Явах: 18:00 · Ирэх: 23:50 · Вагон: 20</div></div>
+    </div>
+
+    <!-- Risk -->
+    <div class="page" id="page-risk">
+        <div class="inner-header"><h2>А-744 эрсдэлийн үнэлгээ</h2><p>Эрсдэл бүртгэх ба хянах</p></div>
+        <div class="card">
+            <h3><i class="ti ti-shield" style="color:#d68910"></i> Шинэ үнэлгээ</h3>
+            <label>Ажлын байрны нэр</label>
+            <input type="text" placeholder="Жишээ: Замын засвар - 140+500">
+            <label>Эрсдэлийн төрөл</label>
+            <select><option>Галт тэрэгний аюул</option><option>Цахилгааны аюул</option><option>Өндрийн ажил</option><option>Хүнд тоног төхөөрөмж</option></select>
+            <label>Эрсдэлийн түвшин</label>
+            <select><option>Бага (1-3)</option><option>Дунд (4-6)</option><option>Өндөр (7-9)</option><option>Маш өндөр (10)</option></select>
+            <label>Хамгаалалтын арга хэмжээ</label>
+            <textarea placeholder="Авах арга хэмжээнүүд..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="showSaved('risk-save')"><i class="ti ti-device-floppy"></i> Хадгалах</button>
+        <div class="save-msg" id="risk-save">✓ Амжилттай хадгалагдлаа</div>
+    </div>
+
+    <!-- Weather -->
+    <div class="page" id="page-weather">
+        <div class="inner-header"><h2>Цаг агаарын мэдээ</h2></div>
+        <div class="card" style="text-align:center;padding:20px">
+            <div style="font-size:3rem">🌤️</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--primary);margin:8px 0">+12°C</div>
+            <div style="color:var(--muted);font-size:0.85rem">Улаанбаатар — Хэсэгчлэн үүлэрхэг</div>
+        </div>
+        <div class="weather-grid">
+            <div class="weather-item"><div class="val">28%</div><div class="lbl">Чийгшил</div></div>
+            <div class="weather-item"><div class="val">15 км/ц</div><div class="lbl">Салхи</div></div>
+            <div class="weather-item"><div class="val">-3°C</div><div class="lbl">Шөнийн хамгийн бага</div></div>
+            <div class="weather-item"><div class="val">+18°C</div><div class="lbl">Өдрийн хамгийн их</div></div>
+        </div>
+        <div class="card" style="margin-top:4px">
+            <h3><i class="ti ti-calendar-week" style="color:#1a6bb5"></i> Урьдчилсан 5 хоногийн мэдээлэл</h3>
+            <div class="forecast-strip">
+                <div class="forecast-day"><div style="color:var(--muted)">Мягмар</div><div style="font-size:1.2rem;margin:4px 0">🌤️</div><div style="font-weight:700">+14°</div></div>
+                <div class="forecast-day"><div style="color:var(--muted)">Лхагва</div><div style="font-size:1.2rem;margin:4px 0">🌧️</div><div style="font-weight:700">+8°</div></div>
+                <div class="forecast-day"><div style="color:var(--muted)">Пүрэв</div><div style="font-size:1.2rem;margin:4px 0">🌥️</div><div style="font-weight:700">+11°</div></div>
+                <div class="forecast-day"><div style="color:var(--muted)">Баасан</div><div style="font-size:1.2rem;margin:4px 0">☀️</div><div style="font-weight:700">+17°</div></div>
+                <div class="forecast-day"><div style="color:var(--muted)">Бямба</div><div style="font-size:1.2rem;margin:4px 0">☀️</div><div style="font-weight:700">+20°</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task -->
+    <div class="page" id="page-task">
+        <div class="inner-header"><h2>ИТА үүрэг даалгавар</h2><p>Өнөөдрийн ажлын жагсаалт</p></div>
+        <div id="tasklist"></div>
+        <div class="card">
+            <h3><i class="ti ti-plus" style="color:#1a6bb5"></i> Шинэ даалгавар</h3>
+            <input type="text" id="newtask" placeholder="Даалгаврын нэр...">
+            <button class="btn-primary" onclick="addTask()"><i class="ti ti-plus"></i> Нэмэх</button>
+        </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="page" id="page-feedback">
+        <div class="inner-header"><h2>Санал хүсэлт</h2><p>Таны санал бидэнд чухал</p></div>
+        <div class="card">
+            <h3><i class="ti ti-message-circle" style="color:#b5195c"></i> Санал илгээх</h3>
+            <label>Төрөл</label>
+            <select><option>Санал</option><option>Хүсэлт</option><option>Гомдол</option><option>Магтаал</option></select>
+            <label>Гарчиг</label>
+            <input type="text" placeholder="Санал, хүсэлтийн гарчиг">
+            <label>Дэлгэрэнгүй</label>
+            <textarea placeholder="Санал хүсэлтээ бичнэ үү..."></textarea>
+            <label>Холбоо барих утас</label>
+            <input type="tel" placeholder="Утасны дугаар">
+        </div>
+        <button class="btn-primary" onclick="showSaved('fb-save')"><i class="ti ti-send"></i> Илгээх</button>
+        <div class="save-msg" id="fb-save">✓ Санал амжилттай илгээгдлээ</div>
+    </div>
+
+    <!-- AI Assistant -->
+    <div class="page" id="page-ai">
+        <div class="inner-header"><h2>AI туслах</h2><p>Ажлын мэдээлэл, заавар, асуултад туслах хэсэг</p></div>
+        <div class="card">
+            <h3><i class="ti ti-sparkles" style="color:#6c3fc5"></i> AI туслах</h3>
+            <div class="notice">Энэ хэсэгт AI туслахын боломжуудыг дараагийн хувилбарт нэмэхээр бэлтгэж байна.</div>
+        </div>
+    </div>
+
+    <!-- Contacts -->
+    <div class="page" id="page-contacts">
+        <div class="inner-header"><h2>Холбоо барих</h2><p>Яаралтай болон ажлын утас</p></div>
+        <div class="card">
+            <h3><i class="ti ti-phone-call" style="color:#c0392b"></i> Яаралтай</h3>
+            <div class="contact-item"><div class="cicon" style="background:#ffe5e5"><i class="ti ti-ambulance" style="color:#c0392b"></i></div><div><div class="cname">Яаралтай тусламж</div><div class="cnum">105</div></div><button class="call-btn"><i class="ti ti-phone"></i></button></div>
+            <div class="contact-item"><div class="cicon" style="background:#ffe5e5"><i class="ti ti-firetruck" style="color:#c0392b"></i></div><div><div class="cname">Галын бригад</div><div class="cnum">101</div></div><button class="call-btn"><i class="ti ti-phone"></i></button></div>
+        </div>
+        <div class="card">
+            <h3><i class="ti ti-users" style="color:#1a6bb5"></i> Программын ажилтантай холбогдох</h3>
+            <div class="contact-item"><div class="cicon" style="background:#e5f0ff"><i class="ti ti-user" style="color:#1a6bb5"></i></div><div><div class="cname">Б.Баасанжаргал</div><div class="cnum">+976 89669234</div></div><button class="call-btn"><i class="ti ti-phone"></i></button></div>
+            <div class="contact-item"><div class="cicon" style="background:#e5f0ff"><i class="ti ti-user" style="color:#1a6bb5"></i></div><div><div class="cname">О.Ганбаяр</div><div class="cnum">+976 86895373</div></div><button class="call-btn"><i class="ti ti-phone"></i></button></div>
+        </div>
+    </div>
+
+    <!-- Safety -->
+</div>
+
+<script>
+    var safetyChecks = ['ХХХ хувцас өмссөн','Гэрлийн дохио шалгасан','Хамтран ажиллагчдад мэдэгдсэн','Замын хаалт хийсэн','Хэрэгслийн бүрэн байдал'];
+    var taskData = ['Замын шалгалт — 140+000 хэсэг','Дугуй боолтын чангалт — Вагон №14','Тайлан бичиж өгөх — 17:00 цагт'];
+
+    function initChecks() {
+        var c = document.getElementById('checks'); c.innerHTML = '';
+        safetyChecks.forEach(function(t, i) {
+            var d = document.createElement('div');
+            d.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;cursor:pointer';
+            d.innerHTML = '<div id="chk'+i+'" style="width:22px;height:22px;border-radius:6px;border:2px solid #d0d8e0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0"></div><span style="font-size:0.82rem">'+t+'</span>';
+            d.onclick = function() { toggleCheck(i); };
+            c.appendChild(d);
+        });
+    }
+
+    function toggleCheck(i) {
+        var el = document.getElementById('chk'+i);
+        var on = el.dataset.on === '1';
+        el.dataset.on = on ? '0' : '1';
+        el.style.background = on ? '' : '#1a8a4a';
+        el.style.borderColor = on ? '#d0d8e0' : '#1a8a4a';
+        el.innerHTML = on ? '' : '<i class="ti ti-check" style="color:#fff;font-size:14px"></i>';
+    }
+
+    function initTasks() {
+        var c = document.getElementById('tasklist'); c.innerHTML = '';
+        taskData.forEach(function(t, i) {
+            var d = document.createElement('div');
+            d.id = 'task' + i;
+            d.style.cssText = 'display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;cursor:pointer';
+            d.innerHTML = '<div style="width:22px;height:22px;border-radius:6px;border:2px solid #d0d8e0;flex-shrink:0;display:flex;align-items:center;justify-content:center"></div><span style="font-size:0.82rem">'+t+'</span>';
+            d.onclick = function() { completeTask(this); };
+            c.appendChild(d);
+        });
+    }
+
+    function completeTask(el) {
+        var box = el.querySelector('div');
+        var txt = el.querySelector('span');
+        if (box.dataset.done === '1') return;
+        box.dataset.done = '1';
+        box.style.background = '#1a8a4a'; box.style.borderColor = '#1a8a4a';
+        box.innerHTML = '<i class="ti ti-check" style="color:#fff;font-size:14px"></i>';
+        txt.style.textDecoration = 'line-through'; txt.style.color = '#999';
+    }
+
+    function addTask() {
+        var inp = document.getElementById('newtask');
+        if (!inp.value.trim()) return;
+        taskData.push(inp.value.trim()); inp.value = ''; initTasks();
+    }
+
+    var pages = ['home','defect','schedule','risk','weather','task','feedback','ai','contacts','safety'];
+    var titles = {home:'Замын 2-р анги',defect:'Зааварилгаа',schedule:'Галт тэрэг',risk:'Эрсдэл',weather:'Цаг агаар',task:'Даалгавар',feedback:'Санал',ai:'AI туслах',contacts:'Холбоо',safety:'Аюулгүй'};
+    var menuFileRoutes = {
+        defect: 'QRbvrtgel.html',
+        schedule: 'GTgrapik.html',
+        risk: 'ErsdeliinVnelgee.html',
+        weather: 'UdurTutam.html',
+        task: 'ItaVvreg.html',
+        ai: 'ai.html'
+    };
+    var instructionStoreKey = 'aaInstructionsStore';
+
+    function getStoredInstructionCount() {
+        try {
+            var raw = localStorage.getItem(instructionStoreKey);
+            if (!raw) return 0;
+
+            var parsed = JSON.parse(raw);
+            return Array.isArray(parsed && parsed.storedInstructions)
+                ? parsed.storedInstructions.length
+                : 0;
+        } catch (error) {
+            console.warn('Instruction count load error:', error);
+            return 0;
+        }
+    }
+
+    function refreshDefectBadge() {
+        var badge = document.getElementById('defectBadge');
+        if (!badge) return;
+
+        var count = getStoredInstructionCount();
+        badge.textContent = String(count);
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+
+    function go(id) {
+        if (menuFileRoutes[id]) {
+            window.location.href = menuFileRoutes[id];
+            return;
+        }
+
+        pages.forEach(function(p) {
+            var el = document.getElementById('page-'+p);
+            if (el) el.classList.toggle('active', p === id);
+        });
+        document.getElementById('backBtn').style.display = 'flex';
+        document.getElementById('headerMain').style.display = 'none';
+        document.getElementById('headerSub').textContent = titles[id] || '';
+        if (id === 'safety') initChecks();
+        if (id === 'task') initTasks();
+        window.scrollTo(0, 0);
+    }
+
+    function goHome() {
+        pages.forEach(function(p) {
+            var el = document.getElementById('page-'+p);
+            if (el) el.classList.toggle('active', p === 'home');
+        });
+        document.getElementById('backBtn').style.display = 'none';
+        document.getElementById('headerMain').style.display = 'flex';
+        document.getElementById('headerSub').textContent = 'ПД, ПДБ удирдлагын систем';
+        window.scrollTo(0, 0);
+    }
+
+    function showSaved(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 2500);
+    }
+
+    document.querySelectorAll('.menu-card').forEach(function(item) {
+        item.addEventListener('click', function() {
+            if (navigator.vibrate) navigator.vibrate(20);
+        });
+    });
+
+    refreshDefectBadge();
+    window.addEventListener('pageshow', refreshDefectBadge);
+    window.addEventListener('focus', refreshDefectBadge);
+    window.addEventListener('storage', function(event) {
+        if (!event.key || event.key === instructionStoreKey) {
+            refreshDefectBadge();
+        }
+    });
+</script>
+</body>
+</html>
