@@ -438,8 +438,7 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbytoW1neS7IRtM0CyraFUfMzT0i8rGO3MIwQaHC7kOtHzGc212xhPDSwYftQ4Aw1tdG/exec';
-    const targetSheetName = 'pd-6';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwah59G0zAm3PVEZqXqJYWQNcvFEh7b9lVcouXfDmJJOTgL0zS7RvDA_rdjlorH8erI/exec';
     const storageKey = 'dailyRiskSurveySubmissions';
     const form = document.getElementById('surveyForm');
     const msg = document.getElementById('message');
@@ -494,25 +493,6 @@
         }
 
         submittedAtInput.value = new Date().toISOString();
-
-        // Apps Script sheet-ийг динамикаар сонгох үед pd-6 руу илгээнэ.
-        let sheetNameInput = form.querySelector('input[name="sheetName"]');
-        if (!sheetNameInput) {
-            sheetNameInput = document.createElement('input');
-            sheetNameInput.type = 'hidden';
-            sheetNameInput.name = 'sheetName';
-            form.appendChild(sheetNameInput);
-        }
-        sheetNameInput.value = targetSheetName;
-
-        let sheetInput = form.querySelector('input[name="sheet"]');
-        if (!sheetInput) {
-            sheetInput = document.createElement('input');
-            sheetInput.type = 'hidden';
-            sheetInput.name = 'sheet';
-            form.appendChild(sheetInput);
-        }
-        sheetInput.value = targetSheetName;
     }
 
     function renderSubmissions() {
@@ -571,8 +551,6 @@
         try {
             const formData = new FormData(form);
             formData.set('огноо', new Date().toISOString());
-            formData.set('sheetName', targetSheetName);
-            formData.set('sheet', targetSheetName);
 
             const response = await fetch(scriptURL, {
                 method: 'POST',
