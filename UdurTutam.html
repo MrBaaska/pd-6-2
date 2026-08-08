@@ -561,7 +561,7 @@
 <header class="header">
   <div class="header-brand">
     <div class="brand-dot"></div>
-    <span class="brand-title">ПД-6 /Хяналтын самбар/</span>
+    <span class="brand-title">ПД-1 /Хяналтын самбар/</span>
   </div>
   <div class="header-meta">
     <div class="meta-chip">📅 <span class="val" id="currentDate">—</span></div>
@@ -730,9 +730,11 @@
 // ═══════════════════════════════════════════
 // ⭐ ЭНЭ хуудасны өгөгдөл орох ШИТНИЙ НЭР.
 //    Apps Script-ийн sheet нэртэй яг ижил байх ёстой.
-const PAGE_SHEET_NAME = 'pd-6';
+const PAGE_SHEET_NAME = 'pd-1';
 
-const FORM_DATA_KEY = 'news2PersistentFormData';
+const FORM_DATA_KEY_BASE = 'news2PersistentFormData';
+const PAGE_STORAGE_SCOPE = `${window.location.pathname}::${PAGE_SHEET_NAME}`;
+const FORM_DATA_KEY = `${FORM_DATA_KEY_BASE}:${PAGE_STORAGE_SCOPE}`;
 const LEGACY_SHEETS_URL_KEY = 'sheetsWebAppUrl';
 const SHEETS_URL_KEY = `${LEGACY_SHEETS_URL_KEY}:${window.location.pathname}`;
 const STORAGE_SCHEMA_VERSION = 'v2';
@@ -795,6 +797,7 @@ function getLatestLegacyStoredData() {
     try {
       const parsed = JSON.parse(localStorage.getItem(key) || '{}');
       if (!parsed || parsed.schemaVersion !== STORAGE_SCHEMA_VERSION || !parsed.savedAt) continue;
+      if (!isSamePageFormState(parsed)) continue;
       if (!latest || parsed.savedAt > latest.savedAt) {
         latest = parsed;
       }
@@ -806,11 +809,25 @@ function getLatestLegacyStoredData() {
   return latest;
 }
 
+function isSamePageFormState(state) {
+  if (!state || typeof state !== 'object') return false;
+  if (state.scope && state.scope !== PAGE_STORAGE_SCOPE) return false;
+
+  const data = state.data || {};
+  const hasStableKeys = Object.keys(data).some((k) => k.includes('::'));
+  if (!hasStableKeys) return false;
+
+  // Accept legacy unscoped states only when this page's sentinel field exists.
+  return Object.prototype.hasOwnProperty.call(data, 'tbl-irc::0::Батлагдсан орон тоо');
+}
+
 function getStoredFormState() {
   const persistentRaw = localStorage.getItem(FORM_DATA_KEY);
   if (persistentRaw) {
     try {
-      return JSON.parse(persistentRaw);
+      const parsed = JSON.parse(persistentRaw);
+      if (isSamePageFormState(parsed)) return parsed;
+      localStorage.removeItem(FORM_DATA_KEY);
     } catch (_) {
       localStorage.removeItem(FORM_DATA_KEY);
     }
@@ -836,6 +853,7 @@ function saveData() {
   });
   localStorage.setItem(FORM_DATA_KEY, JSON.stringify({
     schemaVersion: STORAGE_SCHEMA_VERSION,
+    scope: PAGE_STORAGE_SCOPE,
     data,
     savedAt: new Date().toISOString()
   }));
