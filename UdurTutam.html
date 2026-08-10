@@ -561,7 +561,7 @@
 <header class="header">
   <div class="header-brand">
     <div class="brand-dot"></div>
-    <span class="brand-title">ПД-6 /Хяналтын самбар/</span>
+    <span class="brand-title">ПД-1 /Хяналтын самбар/</span>
   </div>
   <div class="header-meta">
     <div class="meta-chip">📅 <span class="val" id="currentDate">—</span></div>
@@ -730,7 +730,7 @@
 // ═══════════════════════════════════════════
 // ⭐ ЭНЭ хуудасны өгөгдөл орох ШИТНИЙ НЭР.
 //    Apps Script-ийн sheet нэртэй яг ижил байх ёстой.
-const PAGE_SHEET_NAME = 'pd-6';
+const PAGE_SHEET_NAME = 'ПД-6';
 
 const FORM_DATA_KEY_BASE = 'news2PersistentFormData';
 const PAGE_STORAGE_SCOPE = `${window.location.pathname}::${PAGE_SHEET_NAME}`;
@@ -739,8 +739,12 @@ const LEGACY_SHEETS_URL_KEY = 'sheetsWebAppUrl';
 const SHEETS_URL_KEY = `${LEGACY_SHEETS_URL_KEY}:${window.location.pathname}`;
 const STORAGE_SCHEMA_VERSION = 'v2';
 // ↓ Энд та өөрийн Apps Script URL-аа оруулна уу (анхдагч утга)
-const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbympK50MnNYLamrhNLarI8KOp-K_teigMZZ7fdbOHiofeh35uKDT2devXVX1CFCgoI/exec';
+const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyDlVsHhgK0DFAJZIbk0Os2Oo3VMSumillnFM_YlQOY0xwFa8u6Q7HtM1o5uRuReQI/exec';
 const OLD_SHEETS_URLS = [
+  'https://script.google.com/macros/s/AKfycbyygYIf25fw0PlWkhbKbuZWavo1XCwiUQn2wxhKmPeLZzHYa3pmRSQrpIuJKIkzRho/exec',
+  'https://script.google.com/macros/s/AKfycbwtFPLiws5PJWmBJlMgZ4BcGG6UgABMwB6ZR6B_XtIlXvkdnIXvSwzWmjf0qPJbZ2U/exec',
+  'https://script.google.com/macros/s/AKfycbxbfFYtOuYNmAZo6m3wPMF8O8H0Mo4a3ASWYVtOjInw-F4Val024NNzirdgrgVV3Lw/exec',
+  'https://script.google.com/macros/s/AKfycbympK50MnNYLamrhNLarI8KOp-K_teigMZZ7fdbOHiofeh35uKDT2devXVX1CFCgoI/exec',
   'https://script.google.com/macros/s/AKfycby1LewmrUD9FnBm93Liiv3ebkuWf9-Qf096M6MmJRAKnL0jTCCmH1alHewYO55fdPM/exec',
   'https://script.google.com/macros/s/AKfycbw3gB0rx0pk2Vwh0lr1h8qoLoVo2NfysVbgLeAFEYSx8MZqoKUrp4a2aQWHC-VcRif4/exec',
   'https://script.google.com/macros/s/AKfycbzaBeZ_ll0cj6YG93QMiCiE7fLB6YEQqqRytl_3SSCTG9_M1lZeaLBVHloLhE0lqc7l/exec',
@@ -1196,35 +1200,57 @@ function setSendButtonsState(isBusy) {
 }
 
 async function postToSheets(url, payload) {
-  const response = await fetch(url, {
+  const body = JSON.stringify(payload);
+  const fetchOpts = {
     method: 'POST',
     cache: 'no-store',
-    headers: {
-      'Content-Type': 'text/plain;charset=UTF-8'
-    },
-    body: JSON.stringify(payload),
-    keepalive: true,
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body,
     redirect: 'follow'
-  });
+  };
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+  console.log('[UdurTutam] POST →', url);
+
+  let response;
+  try {
+    response = await fetch(url, fetchOpts);
+  } catch (corsErr) {
+    console.warn('[UdurTutam] CORS/network алдаа, no-cors горим туршиж байна:', corsErr.message);
+    try {
+      await fetch(url, { ...fetchOpts, mode: 'no-cors', redirect: 'follow' });
+      console.log('[UdurTutam] no-cors илгээгдлээ — хариу унших боломжгүй');
+      return { status: 'ok', noCors: true };
+    } catch (noCorsErr) {
+      console.error('[UdurTutam] no-cors ч амжилтгүй:', noCorsErr.message);
+      throw new Error('Сүлжээний алдаа: ' + corsErr.message + ' | ' + noCorsErr.message);
+    }
   }
 
   const responseText = await response.text();
-  let result = null;
+  console.log('[UdurTutam] Хариу status:', response.status, '| body:', responseText.slice(0, 300));
 
+  if (!response.ok) {
+    // Google Sign-In хуудас буцаавал authentication шаардлагатай гэсэн үг
+    if (/<html/i.test(responseText) && /accounts\.google\.com|signin/i.test(responseText)) {
+      throw new Error('Apps Script нийтэд нээлттэй биш байна. Script Editor → Deploy → "Anyone" болгоно уу.');
+    }
+    throw new Error(`HTTP ${response.status}: ${responseText.slice(0, 120)}`);
+  }
+
+  if (/<html/i.test(responseText)) {
+    if (/accounts\.google\.com|signin/i.test(responseText)) {
+      throw new Error('Apps Script нийтэд нээлттэй биш байна. Script Editor → Deploy → "Anyone" болгоно уу.');
+    }
+    const syntaxErrMatch = responseText.match(/SyntaxError:[^<\n]+/i);
+    if (syntaxErrMatch) throw new Error('Apps Script алдаа: ' + syntaxErrMatch[0]);
+    throw new Error('Apps Script HTML хариу буцаалаа — Deploy шинэчлэх шаардлагатай.');
+  }
+
+  let result = null;
   try {
     result = responseText ? JSON.parse(responseText) : null;
-  } catch (error) {
-    const syntaxErrorMatch = responseText.match(/SyntaxError:[^<\n]+/i);
-    if (syntaxErrorMatch) {
-      throw new Error(`Apps Script deploy алдаатай байна: ${syntaxErrorMatch[0]}`);
-    }
-    if (/<html/i.test(responseText)) {
-      throw new Error('Apps Script JSON биш HTML алдаа буцаалаа. Deploy-оо шинэчилнэ үү.');
-    }
-    throw new Error('Apps Script танигдахгүй хариу буцаалаа.');
+  } catch (_) {
+    throw new Error('JSON задлах алдаа. Хариу: ' + responseText.slice(0, 120));
   }
 
   if (!result || result.status !== 'ok') {
@@ -1269,8 +1295,12 @@ async function sendToSheets() {
   const payload = buildPayload();
 
   try {
-    await postToSheets(url, payload);
-    showToast('✅ Google Sheets руу илгээгдлээ', 'success');
+    const result = await postToSheets(url, payload);
+    if (result.noCors) {
+      showToast('📤 Илгээгдсэн (GitHub-аас хариу шалгах боломжгүй)', 'success');
+    } else {
+      showToast('✅ Google Sheets руу илгээгдлээ', 'success');
+    }
     closeSheetsModal();
   } catch (err) {
     showToast('❌ Алдаа: ' + err.message, 'error');
@@ -1289,7 +1319,8 @@ function showToast(msg, type = 'success') {
   ico.textContent = type === 'success' ? '✅' : '❌';
   txt.textContent = msg;
   t.className = `save-toast show ${type}`;
-  setTimeout(() => { t.className = 'save-toast'; }, 3000);
+  // алдааны мессежийг 8 секунд, амжилтынхийг 3 секунд харуулна
+  setTimeout(() => { t.className = 'save-toast'; }, type === 'error' ? 8000 : 3000);
 }
 
 // ═══════════════════════════════════════════
